@@ -1,0 +1,73 @@
+
+
+		//ele = driver.findElement(By.xpath("//a[@class='cart_block_product_name']"));
+		//action = new Actions(driver);
+		//action.moveToElement(ele).build().perform();
+		
+		//Point coordinates = driver.findElement(By.xpath("//a[@class='cart_block_product_name']")).getLocation();
+		//Robot robot = new Robot();
+		//robot.mouseMove(coordinates.getX() + 12,coordinates.getY() + 78);
+
+
+
+
+				Actions action = new Actions(driver);
+				action.moveToElement(ele).perform(); // ele.click() doesn't work.
+				//WaitForElementClickable(By.xpath("//div/a[text()='Add to cart']"), 7, "");
+				
+				//localElement =  driver.findElement(By.xpath("//a/span[text()='Quick view']"));
+				//System.out.println(localElement.getText());
+				//break;
+				//action = new Actions(driver);
+				//action.moveToElement(localElement).contextClick();
+				//Thread.sleep(1000);
+				//localElement.click();
+
+
+				//Thread.sleep(1000);
+				//localElement = driver.findElement(By.xpath("//a/span[text()='Quick view']"));
+				//localElement = driver.findElement(By.xpath("//div/a[text()='Add to cart']"));
+				//localElement.click();
+				//ele.click();
+				
+				//ShowText("See Hover");
+				//Thread.sleep(2000);
+				//WaitForElementClickable(By.xpath("//a/span[text()='Quick view']"), 7, "");		
+				WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  cntr +  "]/div/div[1]/div/a[2]/span"), 7, "");				
+				//WaitForElementClickable(By.xpath("//div/a[text()='Add to cart']"), 7, "");
+
+
+			
+
+			Thread.sleep(2000);
+			//action = new Actions(driver);
+			//localElement = driver.findElement(By.xpath("//a[@class='homefeatured']")); 
+			//action.moveToElement(localElement).perform();
+			//ShowText("See Move");
+			//Thread.sleep(2000);
+			cntr++;
+
+			
+	// //////////////////////////////////////////////////////////////		
+					THIS WAS THE FIRST TEST SITE STTEMPTED - MAYBE GO DIRECT TO THIS ?
+	// //////////////////////////////////////////////////////////////
+			
+	public static void GoToOrderPage() throws Exception
+	{
+		WaitForElementClickable(By.xpath("//span[contains(text(),'Homepage')]"), 20, "");
+		WaitForElementClickable(By.xpath("//small[text()='http://www.phptravels.net']"), 5, "");	
+		driver.findElement(By.xpath("//small[text()='http://www.phptravels.net']")).click();
+		//WaitForElementClickable(By.xpath("//a[contains(text(),'View More Offers')]"), 15, ""); // nope		
+		//WaitForElementClickable(By.xpath("//a[@class='loader btn btn-primary btn-block p16']"), 15, ""); // nope		
+		// WaitForElementVisible(By.xpath("//strong[@class='ttu']"), 10);// no
+		//WaitForElementClickable(By.xpath("(//a[text()=' Book Now'])[2]"), 15, ""); // no
+		ShowPopup("wait");
+		//driver.findElement(By.xpath("(//a[text()=' Book Now'])[1]")).click();
+		//WebElement homeButton = driver.findElement(By.xpath("(//a[text()=' Book Now'])[1]"));
+		//Actions actions = new Actions(driver);
+		//actions.moveToElement(homeButton).click().perform();
+		// //a[text()=' Book Now']
+		//form[@name='fCustomHotelSearch']//button[@type='submit'][contains(text(),'Search')]
+		//button/i[@class='']
+	}
+			
