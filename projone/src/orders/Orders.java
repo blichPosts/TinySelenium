@@ -3,12 +3,13 @@ package orders;
 import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.testng.Assert;
 import org.w3c.dom.NameList;
 
 import tests.BaseSelenium;
@@ -20,6 +21,10 @@ public class Orders extends BaseSelenium
 	public static List<WebElement> namesList = new ArrayList<WebElement>();
 	public static List<WebElement> costList = new ArrayList<WebElement>();
 	public static List<WebElement> localWebList =  new ArrayList<WebElement>();
+	public static List<ShoppingCartItem> listOfShoppingCartItems =  new ArrayList<ShoppingCartItem>();
+	
+	public static int maxNumItemsOnMainPage = 0; 
+	
 	
 	public static void WaitForMainPageToLoad() throws Exception
 	{
@@ -36,10 +41,15 @@ public class Orders extends BaseSelenium
 
 		// remove empty strings from costList 
 		WebElementListTextRemoveEmptyStrings(costList);
-		// show lists
+
+		// at this point, lists should be same size.
+		Assert.assertEquals(eleList.size(), namesList.size());
+		Assert.assertEquals(namesList.size(), costList.size());
+		maxNumItemsOnMainPage = eleList.size();
+		
+		// show text lists
 		//ShowWebElementListText(costList);
 		//ShowWebElementListText(namesList);
-
 	}
 	
 	// see link
@@ -87,7 +97,6 @@ public class Orders extends BaseSelenium
 	// add to shop cart and remove in shop cart.
 	public static void PassTwo() throws Exception
 	{
-
 		OrderItemByIndexFromMainPage(1);
 		ReturnToMainPageFromShoppingCart();
 		OrderItemByIndexFromMainPage(2);
@@ -109,19 +118,19 @@ public class Orders extends BaseSelenium
 				Thread.sleep(3000);
 			}
 		}
-		
-		
 	}
 	
 	
 	public static void PassThree() throws Exception
 	{
-		int itemIndex = 3;
+		int itemIndex = 0;
+		Random rand = new Random();
 		
-		OrderItemByIndexFromMainPage(itemIndex);
-		ReturnToMainPageFromShoppingCart();
-
-		SetupTestLists();		
+		SetupTestLists();
+		
+		SelectItemAndUpdateShopingCartItemList(rand);
+		
+		ShowText("");
 		
 		WaitForElementClickable(By.xpath("//a[@title='View my shopping cart']"), 5, "");
 		WebElement ele = driver.findElement(By.xpath("//a[@title='View my shopping cart']"));
@@ -134,6 +143,7 @@ public class Orders extends BaseSelenium
 		Thread.sleep(1000);
 		WaitForElementClickable(By.xpath(".//*[@id='button_order_cart']/span"), 5, "");
 
+		
 		ShowText(driver.findElement(By.xpath("//span[@class='quantity']")).getText());
 		ShowText(costList.get(itemIndex - 1).getText());
 		ShowText(driver.findElement(By.xpath("//span[@class='price']")).getText());
@@ -141,9 +151,26 @@ public class Orders extends BaseSelenium
 		ShowText(driver.findElement(By.xpath("//a[@class='cart_block_product_name']")).getAttribute("title"));
 	}
 	
+	
+	
+	
+	
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 														Helpers
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public static void SelectItemAndUpdateShopingCartItemList(Random rand) throws Exception
+	{
+		String name = "";
+		int itemIndex = rand.nextInt(maxNumItemsOnMainPage) + 1; // +1 makes it between 1 and maxNumItemsOnMainPage
+		
+		OrderItemByIndexFromMainPage(itemIndex);
+		ReturnToMainPageFromShoppingCart();
+	}
+	
+	
+	
+	
 	
 	public static void VerifyExpectedItems(String expectedPrice, String expectedItemName)
 	{
@@ -153,6 +180,9 @@ public class Orders extends BaseSelenium
 	
 	public static void OrderItemByIndexFromMainPage(int index)
 	{
+		String currentColor = "";
+		String currentName = "";
+		
 		// after going from checkout to main page, elements in list go bad. just renew the list each time this is called instead of try/catch on move to element
 		SetupTestLists(); 
 		
@@ -166,12 +196,18 @@ public class Orders extends BaseSelenium
 		
 		// select to checkout in pop-up 
 		WaitForElementClickable(By.xpath("//span[contains(text(),'Proceed to checkout')]"), 7, "");
+
+		// store name and color
+		//span[@id='layer_cart_product_title']
+		currentName = driver.findElement(By.xpath("//span[@id='layer_cart_product_title']")).getText();
+		currentColor = driver.findElement(By.xpath("//span[@id='layer_cart_product_attributes']")).getText();		
+		ShowText("name " + currentName);
+		ShowText("color " + currentColor);		
+
 		driver.findElement(By.xpath("//span[contains(text(),'Proceed to checkout')]")).click();
 		
 		// wait for 'Proceed to checkout' in shop cart 
 		WaitForElementClickable(By.xpath("(//span[contains(text(),'Proceed to checkout')])[2]"), 5, "");
-		////a[@title='Continue shopping']
-		
 	}
 
 	public static void ReturnToMainPageFromShoppingCart() throws Exception
@@ -181,9 +217,19 @@ public class Orders extends BaseSelenium
 		WaitForMainPageToLoad();		
 	}
 
-
-	
-	
-	
+	public class ShoppingCartItem
+	{
+		public String m_name = "";
+		public String m_color = "";
+		public int quanity = 0;
+		
+		
+		public ShoppingCartItem(String name, String color)
+		{
+			m_name = name;
+			m_color = color;
+			quanity = 1;
+		}
+	}
 }
  
