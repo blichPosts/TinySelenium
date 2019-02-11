@@ -25,7 +25,8 @@ public class Orders extends BaseSelenium
 	public static List<WebElement> namesList = new ArrayList<WebElement>();
 	public static List<WebElement> costList = new ArrayList<WebElement>();
 	public static List<WebElement> localWebList =  new ArrayList<WebElement>();
-	public static List<ShoppingCartItem> listOfShoppingCartItems =  new ArrayList<ShoppingCartItem>();
+	//public static List<ShoppingCartItem> listOfShoppingCartItems =  new ArrayList<ShoppingCartItem>();
+	public static List<ShoppingCartItem> listOfShoppingCartItemsPulldownList =  new ArrayList<ShoppingCartItem>();	
 	
 	public static int maxNumItemsOnMainPage = 0; 
 	
@@ -137,66 +138,95 @@ public class Orders extends BaseSelenium
 		SelectItemAndUpdateShopingCartItemList(rand);
 		SelectItemAndUpdateShopingCartItemList(rand);
 		SelectItemAndUpdateShopingCartItemList(rand);
-		
-		for(ShoppingCartItem item : listOfShoppingCartItems)
-		{
-			item.Show();
-		}
-		
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
 
-		/*
-		WaitForElementClickable(By.xpath("//a[@title='View my shopping cart']"), 5, "");
-		WebElement ele = driver.findElement(By.xpath("//a[@title='View my shopping cart']"));
+		ShoppingCartItem.ShowListFromCartAdditions();
+		
+		StoreCartPulldownItems();
 		
 		Thread.sleep(1000);
-		
-		Actions action = new Actions(driver);
-		action.moveToElement(ele).perform(); 
-		ShowText("sleep");
-		Thread.sleep(1000);
-		WaitForElementClickable(By.xpath(".//*[@id='button_order_cart']/span"), 5, "");
-		
-		ShowText(driver.findElement(By.xpath("//span[@class='quantity']")).getText());
-		ShowText(costList.get(itemIndex - 1).getText());
-		ShowText(driver.findElement(By.xpath("//span[@class='price']")).getText());
-		ShowText(namesList.get(itemIndex - 1).getText());
-		ShowText(driver.findElement(By.xpath("//a[@class='cart_block_product_name']")).getAttribute("title"));
-		*/
 	}
-	
-	
-	
-	
 	
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 														Helpers
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public static void StoreCartPulldownItems() throws InterruptedException
+	{
+		WebElement pullDowm = driver.findElement(By.xpath("//b[contains(text(),'Cart')]"));
+		Actions action = new Actions(driver);
+		action.moveToElement(pullDowm).perform(); 
+		Thread.sleep(1000);
+
+		List<WebElement> singleItemTotalCost = driver.findElements(By.xpath("//span[@class='price']"));		
+		List<WebElement> quantities = driver.findElements(By.xpath("//span[@class='quantity']"));
+		List<WebElement> productNames = driver.findElements(By.xpath("//a[@class='cart_block_product_name']"));
+		List<WebElement> productAtributes = driver.findElements(By.xpath("//div[@class='product-atributes']/a"));
+		
+		for(int x = 0; x < singleItemTotalCost.size(); x++)
+		{
+			ShowText("--------------");
+			ShowText(productNames.get(x).getAttribute("title"));
+			ShowText(singleItemTotalCost.get(x).getText());
+			ShowText(quantities.get(x).getText());
+			ShowText(productAtributes.get(x).getText());
+		}		
+	}
 	
 	public static void SelectItemAndUpdateShopingCartItemList(Random rand) throws Exception
 	{
 		String name = "";
 		int itemIndex = rand.nextInt(maxNumItemsOnMainPage) + 1; // + 1 makes it between 1 and maxNumItemsOnMainPage
 		
-		// select an item in main page, store some items from pop-up, and check name in pop-up.  
+		SetupTestLists(); // refresh these while in main page.
+		
+		// select an item in main page, store items from pop-up, and check items in the pop-up  
 		OrderItemByIndexFromMainPage(itemIndex);
+		UpdateShoppingCartListWithVerify(itemIndex, true);
+		
 		ReturnToMainPageFromShoppingCart();
 
-		SetupTestLists();
-		UpdateShoppingCartList(itemIndex);
-		
-		
-		
+		//SetupTestLists();
+		//UpdateShoppingCartList(itemIndex);
 	}
 
-	// this is used when an item has been selected from main page and than add to cart has been selected. 
-	public static void UpdateShoppingCartList(int itemIndex)
+	// verify some values in current pop-up.
+	public static void VerifyCurrentValuesInPopup(int index)
+	{
+		double tempDouble = 0.0;
+		int tempInt = -1;
+		
+		// verify total price for item in pop-up
+		tempDouble = Double.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText().replace("$",  ""));
+		Assert.assertEquals(tempDouble, ShoppingCartItem.listOfShoppingCartItems.get(index).m_TotalPrice);
+		
+		// verify quantity for item in pop-up
+		tempInt = Integer.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_quantity']")).getText());
+		Assert.assertEquals(tempInt, ShoppingCartItem.listOfShoppingCartItems.get(index).m_quantity);
+		
+		// verify total of all products shop cart items.
+		//span[@class='ajax_block_products_total']
+		tempDouble =  Double.valueOf(driver.findElement(By.xpath("//span[@class='ajax_block_products_total']")).getText().replace("$", ""));
+		Assert.assertEquals(tempDouble, ShoppingCartItem.FullTotal());
+	}
+	
+	
+	// this is used when an item has been selected from main page and then 'add to cart' has been selected.
+	// the index passed in is the index of the item selected on the main page.
+	// boolean verify says whether to verify some pop-up info.
+	public static void UpdateShoppingCartListWithVerify(int itemIndex, boolean verify)
 	{
 		int cntr = 0;
 		boolean foundExistingItem = false;
 		
-		for(ShoppingCartItem cartItem : listOfShoppingCartItems)
+		// go through the list and see if item has already been added to the shopping cart 
+		//for(ShoppingCartItem cartItem : listOfShoppingCartItems)
+		for(ShoppingCartItem cartItem : ShoppingCartItem.listOfShoppingCartItems)			
 		{
-			if(cartItem.m_color.equals(currentColor) && cartItem.m_name.equals(currentName))
+			if(itemIndex == cartItem.m_MainPageIndex)	
 			{
 				foundExistingItem = true;
 				break;
@@ -206,12 +236,17 @@ public class Orders extends BaseSelenium
 		
 		if(foundExistingItem)
 		{
-			listOfShoppingCartItems.get(cntr).m_quanity++;
+			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_quantity++;
+			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice += ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_price;
 		}
 		else
 		{
-			
-			listOfShoppingCartItems.add(new ShoppingCartItem(currentName , currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", ""))));
+			ShoppingCartItem.listOfShoppingCartItems.add(new ShoppingCartItem(currentName , currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", "")), itemIndex));
+		}
+
+		if(verify)
+		{
+			VerifyCurrentValuesInPopup(cntr);			
 		}
 	}
 	
@@ -221,8 +256,9 @@ public class Orders extends BaseSelenium
 		Assert.assertEquals(expectedItemName, driver.findElement(By.xpath("//h1[@itemprop='name']")).getText());
 	}
 	
-	// this opens the cart window with information about the item selected in the main page.
-	// variables are stored away and name is verified from name in main page.
+	// this opens the cart window, by clicking 'add to cart' hover, that has information about the item selected in the main page.
+	// some variables in the pop-up are stored away and name is verified from name in main page.
+	// this orders the selection
 	public static void OrderItemByIndexFromMainPage(int index)
 	{
 		// move cursor to selection 
@@ -236,7 +272,7 @@ public class Orders extends BaseSelenium
 		// wait for cart to open
 		WaitForElementClickable(By.xpath("//span[contains(text(),'Proceed to checkout')]"), 7, "");
 
-		// store name, color, and price. verify name to stored away is name in names list
+		// store name, color, and price. verify name by comparing to stored away name in names list
 		currentName = driver.findElement(By.xpath("//span[@id='layer_cart_product_title']")).getText(); 
 		Assert.assertEquals(currentName, namesList.get(index - 1).getText() ); // check the name is correct
 		currentColor = driver.findElement(By.xpath("//span[@id='layer_cart_product_attributes']")).getText();
