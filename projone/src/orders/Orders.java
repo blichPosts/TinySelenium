@@ -27,7 +27,6 @@ public class Orders extends BaseSelenium
 	public static List<WebElement> localWebList =  new ArrayList<WebElement>();
 	//public static List<ShoppingCartItem> listOfShoppingCartItems =  new ArrayList<ShoppingCartItem>();
 	public static List<ShoppingCartItem> listOfShoppingCartItemsPulldownList =  new ArrayList<ShoppingCartItem>();	
-	
 	public static int maxNumItemsOnMainPage = 0; 
 	
 	
@@ -132,20 +131,31 @@ public class Orders extends BaseSelenium
 		
 		SetupTestLists();
 		
-		// select item, verify name and price text  of item selected, 
+		// select item, verify name and price text  of item selected, and add it to listOfShoppingCartItems in ShoppingCartItem class 
+		/*
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		SelectItemAndUpdateShopingCartItemList(rand);
+		*/
 		
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
+		String maxLoop = config.getProperty("SampleSize");
+		
+		for(int x = 0; x < Integer.valueOf(maxLoop); x++)
+		{
+			SelectItemAndUpdateShopingCartItemList(rand);
+		}
 
-		ShoppingCartItem.ShowListFromCartAdditions();
+		//ShoppingCartItem.ShowListFromCartAdditions();
 		
 		StoreCartPulldownItems();
+		//ShoppingCartItem.ShowListFromCartAdditionsPulldown();
+		
+		ShoppingCartItem.CompareOrderLists();
 		
 		Thread.sleep(1000);
 	}
@@ -156,23 +166,31 @@ public class Orders extends BaseSelenium
 	
 	public static void StoreCartPulldownItems() throws InterruptedException
 	{
+		double tempDouble = 0;
+		int tempInt = 0;
+
+		// open pull-down with hover.
 		WebElement pullDowm = driver.findElement(By.xpath("//b[contains(text(),'Cart')]"));
 		Actions action = new Actions(driver);
 		action.moveToElement(pullDowm).perform(); 
 		Thread.sleep(1000);
 
+		// store properties in each cart item
 		List<WebElement> singleItemTotalCost = driver.findElements(By.xpath("//span[@class='price']"));		
 		List<WebElement> quantities = driver.findElements(By.xpath("//span[@class='quantity']"));
 		List<WebElement> productNames = driver.findElements(By.xpath("//a[@class='cart_block_product_name']"));
 		List<WebElement> productAtributes = driver.findElements(By.xpath("//div[@class='product-atributes']/a"));
-		
+
+		// build list of items in pull-down of shopping cart items. 
 		for(int x = 0; x < singleItemTotalCost.size(); x++)
 		{
-			ShowText("--------------");
-			ShowText(productNames.get(x).getAttribute("title"));
-			ShowText(singleItemTotalCost.get(x).getText());
-			ShowText(quantities.get(x).getText());
-			ShowText(productAtributes.get(x).getText());
+			// convert quantity and cost
+			tempInt =  Integer.valueOf(quantities.get(x).getText());
+			tempDouble =  Double.valueOf(singleItemTotalCost.get(x).getText().replace("$", ""));
+			
+			// add to list
+			ShoppingCartItem.listOfShoppingCartItemsPulldownList.add(new ShoppingCartItem(productNames.get(x).getAttribute("title"), productAtributes.get(x).getText(), 
+																						  tempInt, tempDouble));
 		}		
 	}
 	
@@ -180,6 +198,8 @@ public class Orders extends BaseSelenium
 	{
 		String name = "";
 		int itemIndex = rand.nextInt(maxNumItemsOnMainPage) + 1; // + 1 makes it between 1 and maxNumItemsOnMainPage
+		
+		System.out.println("Current index selkected from main page is: " + itemIndex);
 		
 		SetupTestLists(); // refresh these while in main page.
 		
@@ -201,7 +221,7 @@ public class Orders extends BaseSelenium
 		
 		// verify total price for item in pop-up
 		tempDouble = Double.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText().replace("$",  ""));
-		Assert.assertEquals(tempDouble, ShoppingCartItem.listOfShoppingCartItems.get(index).m_TotalPrice);
+		Assert.assertEquals(tempDouble, ShoppingCartItem.listOfShoppingCartItems.get(index).m_TotalPrice); // bladd round
 		
 		// verify quantity for item in pop-up
 		tempInt = Integer.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_quantity']")).getText());
@@ -221,6 +241,7 @@ public class Orders extends BaseSelenium
 	{
 		int cntr = 0;
 		boolean foundExistingItem = false;
+		double tempDouble;
 		
 		// go through the list and see if item has already been added to the shopping cart 
 		//for(ShoppingCartItem cartItem : listOfShoppingCartItems)
@@ -234,14 +255,28 @@ public class Orders extends BaseSelenium
 			cntr++;
 		}
 		
-		if(foundExistingItem)
+		if(foundExistingItem) // update quntity and total cost
 		{
 			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_quantity++;
 			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice += ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_price;
+			
+			//https://stackoverflow.com/questions/25981349/java-double-round-off-to-2-decimal-always
+			tempDouble = Math.round(ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice * 100D)/100D;
+			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice = tempDouble;
 		}
 		else
 		{
-			ShoppingCartItem.listOfShoppingCartItems.add(new ShoppingCartItem(currentName , currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", "")), itemIndex));
+			try
+			{
+				ShoppingCartItem.listOfShoppingCartItems.add(new ShoppingCartItem(currentName, currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", "")), itemIndex));				
+			}
+			catch (Exception e)
+			{
+				ShowText("name: " + currentName + "color: " + currentColor);
+				ShowText(e.getMessage());
+				Assert.fail("See exception message about missing strings");
+			}
+
 		}
 
 		if(verify)
