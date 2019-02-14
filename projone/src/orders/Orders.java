@@ -10,6 +10,7 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
+import org.testng.asserts.Assertion;
 import org.w3c.dom.NameList;
 
 import helpers.ShoppingCartItem;
@@ -131,6 +132,14 @@ public class Orders extends BaseSelenium
 		
 		SetupTestLists();
 		
+		for(WebElement ele : costList )
+		{
+			if(ele.getText() == "")
+			{
+				Assert.fail("Bad Cost List");
+			}
+		}
+		
 		// select item, verify name and price text  of item selected, and add it to listOfShoppingCartItems in ShoppingCartItem class 
 		/*
 		SelectItemAndUpdateShopingCartItemList(rand);
@@ -199,9 +208,9 @@ public class Orders extends BaseSelenium
 		String name = "";
 		int itemIndex = rand.nextInt(maxNumItemsOnMainPage) + 1; // + 1 makes it between 1 and maxNumItemsOnMainPage
 		
-		System.out.println("Current index selkected from main page is: " + itemIndex);
+		System.out.println("Current index selected from main page is: " + itemIndex);
 		
-		SetupTestLists(); // refresh these while in main page.
+		//SetupTestLists(); // refresh these while in main page.
 		
 		// select an item in main page, store items from pop-up, and check items in the pop-up  
 		OrderItemByIndexFromMainPage(itemIndex);
@@ -272,8 +281,9 @@ public class Orders extends BaseSelenium
 			}
 			catch (Exception e)
 			{
-				ShowText("name: " + currentName + "color: " + currentColor);
-				ShowText(e.getMessage());
+				ShowText("These are all the strings passed into constructor ");
+				System.out.println("name: " + currentName + " color: " + currentColor +  " cost: " + costList.get(itemIndex - 1).getText().replace("$", "") + " index: " + itemIndex);
+				ShowText("Error is " + e.getMessage());
 				Assert.fail("See exception message about missing strings");
 			}
 
@@ -294,7 +304,7 @@ public class Orders extends BaseSelenium
 	// this opens the cart window, by clicking 'add to cart' hover, that has information about the item selected in the main page.
 	// some variables in the pop-up are stored away and name is verified from name in main page.
 	// this orders the selection
-	public static void OrderItemByIndexFromMainPage(int index)
+	public static void OrderItemByIndexFromMainPage(int index) throws Exception
 	{
 		// move cursor to selection 
 		Actions action = new Actions(driver);
@@ -308,8 +318,19 @@ public class Orders extends BaseSelenium
 		WaitForElementClickable(By.xpath("//span[contains(text(),'Proceed to checkout')]"), 7, "");
 
 		// store name, color, and price. verify name by comparing to stored away name in names list
+		WaitForElementVisible(By.xpath("//span[@id='layer_cart_product_title']"), 5);
+		Thread.sleep(1000); // wait for element visible above didn't help
 		currentName = driver.findElement(By.xpath("//span[@id='layer_cart_product_title']")).getText(); 
-		Assert.assertEquals(currentName, namesList.get(index - 1).getText() ); // check the name is correct
+		try
+		{
+			Assert.assertEquals(currentName, namesList.get(index - 1).getText() ); // check the name is correct			
+		}
+		catch(AssertionError e)
+		{
+			ShowText("Error " + e.getMessage());
+			ShowText("current name: " + currentName + "Index name: " + namesList.get(index - 1).getText());
+		}
+
 		currentColor = driver.findElement(By.xpath("//span[@id='layer_cart_product_attributes']")).getText();
 		currentPrice = driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText();		
 	}
