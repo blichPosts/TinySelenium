@@ -13,8 +13,8 @@ public class ShoppingCartItem
 	public double m_price = 0.0;
 	public double m_TotalPrice = 0.0;
 	public int m_MainPageIndex = -1;
-	public static List<ShoppingCartItem> listOfShoppingCartItems = new ArrayList<ShoppingCartItem>(); 
-	public static List<ShoppingCartItem> listOfShoppingCartItemsPulldownList =  new ArrayList<ShoppingCartItem>();
+	public static List<ShoppingCartItem> listOfShoppingCartItems = new ArrayList<ShoppingCartItem>();  // list from main page add to carts
+	public static List<ShoppingCartItem> listOfShoppingCartItemsPulldownList =  new ArrayList<ShoppingCartItem>(); // list in cart products hover
 	
 	public ShoppingCartItem(String name, String color, double price, int index)
 	{

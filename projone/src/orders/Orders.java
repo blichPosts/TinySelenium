@@ -126,6 +126,24 @@ public class Orders extends BaseSelenium
 	}
 	
 	
+
+	// assume items have been added and stored into the list (listOfShoppingCartItems) that was populated during adding the items to the pull-down cart
+	// the user is at shopping cart summary page
+	public static void PassFour() throws Exception
+	{
+		List<WebElement> summaryPageList = driver.findElements(By.xpath("//tbody/tr"));
+		//System.out.println(summaryPageList.size());
+		//System.out.println(ShoppingCartItem.listOfShoppingCartItems.size());
+		Assert.assertEquals(ShoppingCartItem.listOfShoppingCartItems.size(), summaryPageList.size());
+		
+		ShoppingCartItem.listOfShoppingCartItemsPulldownList.clear(); // use this list to store items in shopping cart summary page.
+		
+		StoreShopCartSummaryPage(summaryPageList.size());
+		
+		
+		
+	}
+	
 	// see testNg class for description
 	public static void PassThree() throws Exception
 	{
@@ -133,7 +151,7 @@ public class Orders extends BaseSelenium
 		
 		SetupTestLists();
 		
-		for(WebElement ele : costList )
+		for(WebElement ele : costList ) // make sure no null strings in cost list (there were null string fails in calls further below.
 		{
 			if(ele.getText() == "")
 			{
@@ -154,6 +172,9 @@ public class Orders extends BaseSelenium
 		//ShoppingCartItem.ShowListFromCartAdditionsPulldown();
 		
 		ShoppingCartItem.CompareOrderLists();
+		
+		WaitForElementClickable(By.xpath(".//*[@id='button_order_cart']/span"), 5, "");
+		driver.findElement(By.xpath(".//*[@id='button_order_cart']/span")).click();
 		
 		Thread.sleep(1000);
 	}
@@ -191,6 +212,27 @@ public class Orders extends BaseSelenium
 																						  tempInt, tempDouble));
 		}		
 	}
+	
+	public static void StoreShopCartSummaryPage(int numberOfItemRows)
+	{
+		//#cart_summary>tbody>tr:nth-of-type(1)
+		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(2)>p>a")).getText());
+		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(2)>small>a")).getText());		
+		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(4)>span>span")).getText());		
+		
+		for(int x = 1; x <= numberOfItemRows; x++)
+		{
+			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>p>a")).getText());
+			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small>a")).getText());		
+			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(4)>span>span")).getText());		
+			
+		}
+		
+		
+		
+		// #cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(4)>span>span
+	}
+	
 	
 	public static void SelectItemAndUpdateShopingCartItemList(Random rand) throws Exception
 	{
