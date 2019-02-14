@@ -126,6 +126,7 @@ public class Orders extends BaseSelenium
 	}
 	
 	
+	// see testNg class for description
 	public static void PassThree() throws Exception
 	{
 		Random rand = new Random();
@@ -139,18 +140,6 @@ public class Orders extends BaseSelenium
 				Assert.fail("Bad Cost List");
 			}
 		}
-		
-		// select item, verify name and price text  of item selected, and add it to listOfShoppingCartItems in ShoppingCartItem class 
-		/*
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		SelectItemAndUpdateShopingCartItemList(rand);
-		*/
 		
 		String maxLoop = config.getProperty("SampleSize");
 		
