@@ -83,6 +83,17 @@ public class Orders extends BaseSelenium
 			driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@class='fancybox-iframe']")));
 			WaitForElementVisible(By.xpath("//label[contains(text(),'Quantity')]"), 7);
 			WaitForElementClickable(By.xpath("//span[contains(text(),'Add to cart')]"), 7, "");
+			
+			ShowText(driver.findElement(By.xpath("//p[@id='product_reference']")).getText());
+			
+			driver.switchTo().defaultContent();
+			
+			WaitForElementClickable(By.xpath("//a[@title='Close']"), 5, "");
+			driver.findElement(By.xpath("//a[@title='Close']")).click();
+			
+			ShowPopup("---");
+			
+			
 			VerifyExpectedItems(tempCost, tempItemName); // verification
 			
 			driver.findElement(By.xpath("//span[contains(text(),'Add to cart')]")).click(); // select add to cart and do nothing
@@ -337,10 +348,19 @@ public class Orders extends BaseSelenium
 	// this orders the selection
 	public static void OrderItemByIndexFromMainPage(int index) throws Exception
 	{
+		// FIX BELOW - need ele
+		// get product reference
+		GetProductReference(eleList.get(index - 1), index);
+		// above
+		ShowPopup("----");
+		
 		// move cursor to selection 
 		Actions action = new Actions(driver);
 		action.moveToElement(eleList.get(index - 1)).perform(); 
 
+		
+		
+		
 		// select add to cart
 		WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  index +  "]/div/div[2]/div[2]/a[1]/span"), 7, "");
 		driver.findElement(By.xpath(".//*[@id='homefeatured']/li[" +  index +  "]/div/div[2]/div[2]/a[1]/span")).click();
@@ -366,11 +386,39 @@ public class Orders extends BaseSelenium
 		currentPrice = driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText();		
 	}
 
+	public static void GetProductReference(WebElement ele, int cntr) throws Exception
+	{
+		System.out.println("Size " + eleList.size() + "  " + (cntr - 1));
+		
+		Actions action = new Actions(driver);
+		action.moveToElement(ele).perform(); 
+		
+		// select 'quick view' hover select over current web element   
+		WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  cntr +  "]/div/div[1]/div/a[2]/span"), 7, "");
+		driver.findElement(By.xpath(".//*[@id='homefeatured']/li[" +  cntr +  "]/div/div[1]/div/a[2]/span")).click();
+		Thread.sleep(3000); // have to do this wait because frame switch is done in window popping up
+		
+		ShowPopup("one");
+		
+		// switch to correct frame and select 'add to cart',  after verifying item name and cost.
+		driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@class='fancybox-iframe']")));
+		WaitForElementVisible(By.xpath("//label[contains(text(),'Quantity')]"), 7);
+		WaitForElementClickable(By.xpath("//span[contains(text(),'Add to cart')]"), 7, "");
+		
+		ShowText(driver.findElement(By.xpath("//p[@id='product_reference']")).getText());
+		
+		driver.switchTo().defaultContent();
+		
+		WaitForElementClickable(By.xpath("//a[@title='Close']"), 5, "");
+		driver.findElement(By.xpath("//a[@title='Close']")).click();		
+	}
+	
 	public static void ReturnToMainPageFromShoppingCart() throws Exception
 	{
 		WaitForElementClickable(By.xpath("//div[@class='button-container']//span[1]//span[1]"), 5, "");
 		driver.findElement(By.xpath("//div[@class='button-container']//span[1]//span[1]")).click();
 		WaitForMainPageToLoad();		
 	}
+
 }
  
