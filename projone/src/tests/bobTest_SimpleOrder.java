@@ -35,9 +35,6 @@ public class bobTest_SimpleOrder extends BaseSelenium
 		Orders.WaitForMainPageToLoad();
 		Orders.SetupTestLists();
 		//Orders.PassOne();
-
-		
-		ShowPopup("stop");
 		
 		// remove all items added to the cart
 		//Orders.PassTwo();

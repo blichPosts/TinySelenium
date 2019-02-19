@@ -1,18 +1,13 @@
 package orders;
 
-import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
-import org.testng.asserts.Assertion;
-import org.w3c.dom.NameList;
-
 import helpers.ShoppingCartItem;
 import tests.BaseSelenium;
 
@@ -21,13 +16,12 @@ public class Orders extends BaseSelenium
 	public static String currentColor = "";
 	public static String currentName = "";
 	public static String currentPrice = "";
+	public static String currentProductReference = "";
 	
 	public static List<WebElement> eleList = new ArrayList<WebElement>(); 
 	public static List<WebElement> namesList = new ArrayList<WebElement>();
 	public static List<WebElement> costList = new ArrayList<WebElement>();
 	public static List<WebElement> localWebList =  new ArrayList<WebElement>();
-	//public static List<ShoppingCartItem> listOfShoppingCartItems =  new ArrayList<ShoppingCartItem>();
-	public static List<ShoppingCartItem> listOfShoppingCartItemsPulldownList =  new ArrayList<ShoppingCartItem>();	
 	public static int maxNumItemsOnMainPage = 0; 
 	
 	
@@ -147,9 +141,11 @@ public class Orders extends BaseSelenium
 		//System.out.println(ShoppingCartItem.listOfShoppingCartItems.size());
 		Assert.assertEquals(ShoppingCartItem.listOfShoppingCartItems.size(), summaryPageList.size());
 		
-		ShoppingCartItem.listOfShoppingCartItemsPulldownList.clear(); // use this list to store items in shopping cart summary page.
+		ShoppingCartItem.listOfSummaryPageItems.clear(); // use this list to store items in shopping cart summary page.
 		
 		StoreShopCartSummaryPage(summaryPageList.size());
+		
+		ShoppingCartItem.ShowListFromSummaryPage();
 		
 		
 		
@@ -172,22 +168,22 @@ public class Orders extends BaseSelenium
 		
 		String maxLoop = config.getProperty("SampleSize");
 		
-		for(int x = 0; x < Integer.valueOf(maxLoop); x++)
+		for(int x = 0; x < Integer.valueOf(maxLoop); x++) // add items from main page to shop cart.
 		{
 			SelectItemAndUpdateShopingCartItemList(rand);
 		}
 
 		//ShoppingCartItem.ShowListFromCartAdditions();
 		
-		StoreCartPulldownItems();
-		//ShoppingCartItem.ShowListFromCartAdditionsPulldown();
+		StoreCartPulldownItems(); // store item listed in pull-down list.
 		
-		ShoppingCartItem.CompareOrderLists();
+		ShoppingCartItem.CompareOrderLists(); // compare lists
 		
+		// select 'checkout' at the bottom of the pull-down list.  
 		WaitForElementClickable(By.xpath(".//*[@id='button_order_cart']/span"), 5, "");
 		driver.findElement(By.xpath(".//*[@id='button_order_cart']/span")).click();
 		
-		Thread.sleep(1000);
+		WaitForElementClickable(By.xpath("(//span[contains(text(),'Proceed to checkout')])[2]"), 7, "");
 	}
 	
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -226,31 +222,53 @@ public class Orders extends BaseSelenium
 	
 	public static void StoreShopCartSummaryPage(int numberOfItemRows)
 	{
-		//#cart_summary>tbody>tr:nth-of-type(1)
-		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(2)>p>a")).getText());
-		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(2)>small>a")).getText());		
-		//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(4)>span>span")).getText());		
+		double tempDouble = 0.0;
+		String tempString = "";
+		String name =  "";
+		String color = "";
+		String productReferene =  "";
+		double unitPrice = 0.0;
+		double totalPrice = 0.0;
+		int totalQuanity  = -1;
 		
 		for(int x = 1; x <= numberOfItemRows; x++)
 		{
-			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>p>a")).getText());
-			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small>a")).getText());		
-			ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(4)>span>span")).getText());		
+			//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>p>a")).getText());
+			name = driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>p>a")).getText();
 			
+			//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small>a")).getText().split(" ")[2].trim().replace(",", ""));
+			color = driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small>a")).getText().split(" ")[2].trim().replace(",", "");
+			
+			tempString =  driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(4)>span>span")).getText().replace("$","");
+			unitPrice = Double.valueOf(tempString);
+			//tempDouble = Double.valueOf(tempString); 
+			// System.out.println("unit price " + tempDouble);
+
+			tempString =  driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" +  x + ")>td:nth-of-type(6)>span")).getText().replace("$","");
+			totalPrice = Double.valueOf(tempString); 
+			//System.out.println("total price " + tempDouble);
+			
+			//ShowText(driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small:nth-of-type(1)")).getText().split(" ")[2].trim());
+			productReferene = driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(2)>small:nth-of-type(1)")).getText().split(" ")[2].trim();
+
+			tempString = driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(" + x + ")>td:nth-of-type(5)>input:nth-of-type(2)")).getAttribute("value");
+			totalQuanity = Integer.valueOf(tempString); 
+
+			ShoppingCartItem.listOfSummaryPageItems.add(new ShoppingCartItem(name, color, unitPrice, totalPrice, productReferene, totalQuanity));
 		}
-		
-		
-		
-		// #cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(4)>span>span
 	}
-	
 	
 	public static void SelectItemAndUpdateShopingCartItemList(Random rand) throws Exception
 	{
-		String name = "";
 		int itemIndex = rand.nextInt(maxNumItemsOnMainPage) + 1; // + 1 makes it between 1 and maxNumItemsOnMainPage
 		
 		System.out.println("Current index selected from main page is: " + itemIndex);
+		
+		// get the  product reference by selecting hover view and close hover view when done.  
+		GetProductReference(itemIndex); 
+		Thread.sleep(1000);
+		driver.switchTo().defaultContent();
+		WaitForElementClickable(By.xpath("//a[@class='btn btn-default']"), 7, ""); // wait for main page
 		
 		//SetupTestLists(); // refresh these while in main page.
 		
@@ -272,7 +290,7 @@ public class Orders extends BaseSelenium
 		
 		// verify total price for item in pop-up
 		tempDouble = Double.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText().replace("$",  ""));
-		Assert.assertEquals(tempDouble, ShoppingCartItem.listOfShoppingCartItems.get(index).m_TotalPrice); // bladd round
+		Assert.assertEquals(tempDouble, ShoppingCartItem.listOfShoppingCartItems.get(index).m_TotalPrice); 
 		
 		// verify quantity for item in pop-up
 		tempInt = Integer.valueOf(driver.findElement(By.xpath("//span[@id='layer_cart_product_quantity']")).getText());
@@ -306,7 +324,7 @@ public class Orders extends BaseSelenium
 			cntr++;
 		}
 		
-		if(foundExistingItem) // update quntity and total cost
+		if(foundExistingItem) // update quantity and total cost
 		{
 			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_quantity++;
 			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice += ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_price;
@@ -315,11 +333,11 @@ public class Orders extends BaseSelenium
 			tempDouble = Math.round(ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice * 100D)/100D;
 			ShoppingCartItem.listOfShoppingCartItems.get(cntr).m_TotalPrice = tempDouble;
 		}
-		else
+		else // add new shopping cart item to main page list
 		{
 			try
 			{
-				ShoppingCartItem.listOfShoppingCartItems.add(new ShoppingCartItem(currentName, currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", "")), itemIndex));				
+				ShoppingCartItem.listOfShoppingCartItems.add(new ShoppingCartItem(currentName, currentColor, Double.valueOf(costList.get(itemIndex - 1).getText().replace("$", "")), itemIndex, currentProductReference));	
 			}
 			catch (Exception e)
 			{
@@ -328,7 +346,6 @@ public class Orders extends BaseSelenium
 				ShowText("Error is " + e.getMessage());
 				Assert.fail("See exception message about missing strings");
 			}
-
 		}
 
 		if(verify)
@@ -348,18 +365,9 @@ public class Orders extends BaseSelenium
 	// this orders the selection
 	public static void OrderItemByIndexFromMainPage(int index) throws Exception
 	{
-		// FIX BELOW - need ele
-		// get product reference
-		GetProductReference(eleList.get(index - 1), index);
-		// above
-		ShowPopup("----");
-		
 		// move cursor to selection 
 		Actions action = new Actions(driver);
 		action.moveToElement(eleList.get(index - 1)).perform(); 
-
-		
-		
 		
 		// select add to cart
 		WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  index +  "]/div/div[2]/div[2]/a[1]/span"), 7, "");
@@ -386,26 +394,26 @@ public class Orders extends BaseSelenium
 		currentPrice = driver.findElement(By.xpath("//span[@id='layer_cart_product_price']")).getText();		
 	}
 
-	public static void GetProductReference(WebElement ele, int cntr) throws Exception
+	// open the view selection on item index in main page and store the product reference for the item
+	public static void GetProductReference(int itemIndex) throws Exception
 	{
-		System.out.println("Size " + eleList.size() + "  " + (cntr - 1));
+		WebElement ele = eleList.get(itemIndex - 1);
 		
 		Actions action = new Actions(driver);
 		action.moveToElement(ele).perform(); 
 		
 		// select 'quick view' hover select over current web element   
-		WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  cntr +  "]/div/div[1]/div/a[2]/span"), 7, "");
-		driver.findElement(By.xpath(".//*[@id='homefeatured']/li[" +  cntr +  "]/div/div[1]/div/a[2]/span")).click();
-		Thread.sleep(3000); // have to do this wait because frame switch is done in window popping up
+		WaitForElementClickable(By.xpath(".//*[@id='homefeatured']/li[" +  itemIndex +  "]/div/div[1]/div/a[2]/span"), 7, "");
+		driver.findElement(By.xpath(".//*[@id='homefeatured']/li[" +  itemIndex +  "]/div/div[1]/div/a[2]/span")).click();
+		Thread.sleep(3000); // have to do this wait because frame switch is done in window popping up, can't do wait for element
 		
-		ShowPopup("one");
-		
-		// switch to correct frame and select 'add to cart',  after verifying item name and cost.
+		// switch to correct frame and store product reference.
 		driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@class='fancybox-iframe']")));
 		WaitForElementVisible(By.xpath("//label[contains(text(),'Quantity')]"), 7);
 		WaitForElementClickable(By.xpath("//span[contains(text(),'Add to cart')]"), 7, "");
 		
-		ShowText(driver.findElement(By.xpath("//p[@id='product_reference']")).getText());
+		ShowText("Prod reference " + driver.findElement(By.xpath("//p[@id='product_reference']")).getText().split(" " )[1].trim());
+		currentProductReference = driver.findElement(By.xpath("//p[@id='product_reference']")).getText().split(" " )[1].trim(); // get product reference.
 		
 		driver.switchTo().defaultContent();
 		
