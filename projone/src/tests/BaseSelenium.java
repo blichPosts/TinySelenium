@@ -63,6 +63,12 @@ public class BaseSelenium
         driver.manage().window().maximize();
 	}
 	
+	public static void OpenUrlThree()
+	{
+        driver.navigate().to(config.getProperty("UrlTrainCruise"));
+        driver.manage().window().maximize();
+	}
+	
 	public static void CallGoogle()
 	{
         // driver.get("http://www.google.com/");
