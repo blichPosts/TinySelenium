@@ -11,7 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import orders.Orders;
+import actions.Orders;
 
 public class bobTest_SimpleOrder extends BaseSelenium
 {
