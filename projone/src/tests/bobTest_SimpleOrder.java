@@ -38,8 +38,8 @@ public class bobTest_SimpleOrder extends BaseSelenium
 		
 		// remove all items added to the cart
 		//Orders.PassTwo();
-		Orders.PassThree(); // keep
-		Orders.PassFour(); // keep
+		Orders.PassThree(); 
+		Orders.PassFour(); 
 		
 		
 		ShowText("Test Done.");
