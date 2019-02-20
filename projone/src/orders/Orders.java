@@ -136,19 +136,42 @@ public class Orders extends BaseSelenium
 	// the user is at shopping cart summary page
 	public static void PassFour() throws Exception
 	{
+		// make sure number of items in summary page is the same as items in 
 		List<WebElement> summaryPageList = driver.findElements(By.xpath("//tbody/tr"));
-		//System.out.println(summaryPageList.size());
-		//System.out.println(ShoppingCartItem.listOfShoppingCartItems.size());
 		Assert.assertEquals(ShoppingCartItem.listOfShoppingCartItems.size(), summaryPageList.size());
 		
 		ShoppingCartItem.listOfSummaryPageItems.clear(); // use this list to store items in shopping cart summary page.
-		
 		StoreShopCartSummaryPage(summaryPageList.size());
 		
-		ShoppingCartItem.ShowListFromSummaryPage();
+		//ShoppingCartItem.ShowListFromSummaryPage();//ShoppingCartItem.ShowListFromCartAdditions(); // show list to compare
+
+		ShoppingCartItem.CompareOrderListsSummaryPage();
 		
+		// verify total product cost before increment
+		Assert.assertEquals(Double.valueOf(driver.findElement(By.xpath("//td[@id='total_product']")).getText().replace("$", "")), ShoppingCartItem.FullTotal());
 		
+		// verify increment of quantity
+		VerifyIncrementsSummaryPage(summaryPageList);
+
+		// verify total product cost after increment
+		Assert.assertEquals(Double.valueOf(driver.findElement(By.xpath("//td[@id='total_product']")).getText().replace("$", "")), ShoppingCartItem.FullTotal());
 		
+		GoToNextCartPage();
+		WaitForSignInPage();
+		
+		// fill in email and go to next page 
+		driver.findElement(By.xpath("//input[@id='email']")).sendKeys(config.getProperty("Email"));
+		driver.findElement(By.xpath("//input[@id='passwd']")).sendKeys(config.getProperty("Password"));
+		//driver.findElement(By.xpath("//span[contains(text(),'Sign in')]")).click();		
+		driver.findElement(By.xpath("(//button[@type='submit'])[3]")).click();		
+		
+		WaitForAddressPage();
+		GoToNextCartPage();
+		WaitForShippingPageAndAgree();
+		
+		driver.findElement(By.xpath("(//span[contains(text(),'Proceed to checkout')])[2]")).click();
+		WaitForElementClickable(By.xpath("//a[@title='Previous']"), 7, "");
+
 	}
 	
 	// see testNg class for description
@@ -189,6 +212,66 @@ public class Orders extends BaseSelenium
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 														Helpers
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public static void GoToNextCartPage()
+	{
+		WaitForElementClickable(By.xpath("//span[text()='Proceed to checkout']"), 7, "");
+		driver.findElement(By.xpath("//span[text()='Proceed to checkout']")).click();
+	}
+	
+	public static void WaitForSignInPage() 
+	{
+		WaitForElementClickable(By.xpath("//span[contains(text(),'Sign in')]"), 7, "");
+		WaitForElementClickable(By.xpath("//button[@id='SubmitCreate']//span[1]"), 3, "");
+	}
+	
+	public static void WaitForAddressPage() 
+	{
+		WaitForElementClickable(By.xpath("//span[text()='Proceed to checkout']"), 7, "");
+		WaitForElementClickable(By.xpath("//span[text()='Add a new address']"), 3, "");
+	}
+	
+	public static void WaitForShippingPageAndAgree() 
+	{
+		WaitForElementClickable(By.xpath("(//span[contains(text(),'Proceed to checkout')])[2]"), 7, "");
+		WaitForElementClickable(By.cssSelector(".checker"), 3, "");
+		driver.findElement(By.cssSelector(".checker")).click();
+	
+		//button[@name='processCarrier']//span[contains(text(),'Proceed to checkout')]
+	
+	}
+	
+	public static void VerifyIncrementsSummaryPage(List<WebElement> summaryPageList) throws InterruptedException
+	{
+		// select an increment and verify changes.
+		if(summaryPageList.size() > 1)
+		{
+			driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(2)>td:nth-of-type(5)>div>a:nth-of-type(2)>span>i")).click();
+			Thread.sleep(3000);
+			ShoppingCartItem.IncrementTotalCostMainShoppingCart(1);
+			
+			// get price on page
+			String tempString =  driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(2)>td:nth-of-type(6)>span")).getText().replace("$","");
+			Double totalPrice = Double.valueOf(tempString);
+			//System.out.println("=== " + totalPrice);
+			//System.out.println("=== " + ShoppingCartItem.listOfShoppingCartItems.get(1).m_TotalPrice);
+			// Assert.assertEquals(totalPrice, ShoppingCartItem.listOfShoppingCartItems.get(1).m_TotalPrice); // bladd -- need round !!!!ORIG!!!!
+			
+			Double roundedExpected = Math.round(ShoppingCartItem.listOfShoppingCartItems.get(1).m_TotalPrice * 100D)/100D;
+			Assert.assertEquals(totalPrice, roundedExpected); // bladd -- has round
+		}
+		else
+		{
+			driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(5)>div>a:nth-of-type(1)>span>i")).click();
+			Thread.sleep(3000);
+			ShoppingCartItem.IncrementTotalCostMainShoppingCart(0);
+			String tempString =  driver.findElement(By.cssSelector("#cart_summary>tbody>tr:nth-of-type(1)>td:nth-of-type(6)>span")).getText().replace("$","");
+			Double totalPrice = Double.valueOf(tempString);
+			//System.out.println("=== " + totalPrice);
+			//System.out.println("=== " + ShoppingCartItem.listOfShoppingCartItems.get(0).m_TotalPrice);
+			Assert.assertEquals(totalPrice, ShoppingCartItem.listOfShoppingCartItems.get(0).m_TotalPrice);
+		}
+	}
 	
 	public static void StoreCartPulldownItems() throws InterruptedException
 	{

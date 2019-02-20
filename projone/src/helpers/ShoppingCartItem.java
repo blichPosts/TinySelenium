@@ -48,6 +48,12 @@ public class ShoppingCartItem
 		m_TotalPrice = itemTotal;
 	}
 	
+	public static void IncrementTotalCostMainShoppingCart(int index)
+	{
+		double unitPrice = listOfShoppingCartItems.get(index).m_price;
+		listOfShoppingCartItems.get(index).m_TotalPrice += unitPrice; 
+	}
+	
 	public static void ShowListFromCartAdditions()
 	{
 		for(ShoppingCartItem cartItem : listOfShoppingCartItems)
@@ -114,7 +120,7 @@ public class ShoppingCartItem
 	
 	public static boolean CompareObjectsSummaryPage(ShoppingCartItem itemOne, ShoppingCartItem itemTwo)
 	{
-		if(itemOne.m_name.equals(itemTwo.m_name) && itemOne.m_color.equals(itemTwo.m_color) && itemOne.m_quantity == itemTwo.m_quantity && 
+		if(itemOne.m_name.equals(itemTwo.m_name) && itemOne.m_color.contains(itemTwo.m_color) && itemOne.m_quantity == itemTwo.m_quantity && 
 		   itemOne.m_TotalPrice == itemTwo.m_TotalPrice && itemOne.m_ProductReference.equals(itemTwo.m_ProductReference))
 		{
 			return true;
@@ -136,6 +142,22 @@ public class ShoppingCartItem
 		System.out.println("quanity " + cartItem.m_quantity);
 		System.out.println("total " + cartItem.m_TotalPrice);			
 	}
+	
+	public static void ShowCartItemSummary(ShoppingCartItem cartItem, boolean showTitle)
+	{
+		if(showTitle)
+		{
+			System.out.println("Cart Item ****** ");			
+		}
+
+		System.out.println("name " + cartItem.m_name);
+		System.out.println("color " + cartItem.m_color);
+		System.out.println("price " + cartItem.m_price);
+		System.out.println("quanity " + cartItem.m_quantity);
+		System.out.println("total " + cartItem.m_TotalPrice);
+		System.out.println("total " + cartItem.m_ProductReference);		
+	}
+	
 	
 	public static void CompareOrderLists()
 	{
@@ -183,7 +205,7 @@ public class ShoppingCartItem
 			// this loops through the pull down list and looks for the current item taken from the list of items selected in the main page 
 			for(ShoppingCartItem cartItemInner : listOfSummaryPageItems) // inner loop
 			{
-				if(CompareObjects(cartItem, cartItemInner))
+				if(CompareObjectsSummaryPage(cartItem, cartItemInner))
 				{
 					foundMatch = true;
 				}
@@ -193,7 +215,7 @@ public class ShoppingCartItem
 			if(foundMatch == false) // item not found in inner loop.
 			{
 				System.out.println("*** Failed selectiom item with main page index = " + cartItem.m_MainPageIndex);
-				ShowCartItem(cartItem, false);
+				ShowCartItemSummary(cartItem, false);
 				Assert.fail("failed verification for current item.");
 			}
 			else
