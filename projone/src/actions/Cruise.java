@@ -1,12 +1,16 @@
 package actions;
 
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -16,7 +20,6 @@ import helpers.CalendarPropertiesForSelection;
 import org.testng.*;
 import tests.BaseSelenium;
 
-
 public class Cruise extends BaseSelenium 
 {
 	enum CalendarType
@@ -24,8 +27,6 @@ public class Cruise extends BaseSelenium
 		checkIn,
 		checkOut
 	}
-	
-	
 	
 	public static void GetCalendartest() throws InterruptedException
 	{
@@ -46,19 +47,19 @@ public class Cruise extends BaseSelenium
 	public static void SetupStartEndDates() throws ParseException
 	{
 		LocalDateTime now = LocalDateTime.now();
-		
-		//Date date = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date
+
+		System.out.println(now);
 		
 		CalendarPropertiesForSelection.currentMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.currentDay = now.getDayOfMonth();
 
-		now = now.plusDays(2);
+		now = now.plusDays(17);
 		CalendarPropertiesForSelection.checkInMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.checkInDay = now.getDayOfMonth();
 		//Date dateCheckIn = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date		
 		now = LocalDateTime.now();
 		
-		now = now.plusDays(17);
+		now = now.plusDays(66);
 		CalendarPropertiesForSelection.checkOutMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.checkOutDay = now.getDayOfMonth();
 		//Date dateCheckOut = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date
@@ -71,6 +72,7 @@ public class Cruise extends BaseSelenium
 		//CalendarPropertiesForSelection.dateCheckOut =  dateCheckOut2;		
 		
 		CalendarPropertiesForSelection.ShowTimes();
+
 	}
 	
 	// bladd
@@ -91,9 +93,6 @@ public class Cruise extends BaseSelenium
 		
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkOutMonth, CalendarType.checkOut);
 		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
-		
-		
-		
 	}
 	
 	public static void SelectDate(String dayNumber)
@@ -127,8 +126,6 @@ public class Cruise extends BaseSelenium
 	// https://stackoverflow.com/questions/1086396/java-date-month-difference
 	public static void SetupSelectedMonth(String monthToMoveTo, CalendarType type) throws InterruptedException
 	{
-		//(//th[@class='next'])[4]
-		
 		String xpath  = "";
 		
 		if(type.equals(CalendarType.checkIn))
@@ -143,7 +140,7 @@ public class Cruise extends BaseSelenium
 		
 		for(int x = 0; x < 7; x++)
 		{
-			if(GetMonthFromCheckinCalendar().equals(monthToMoveTo))
+			if(GetMonthFromCheckinCalendar(type).equals(monthToMoveTo))
 			{
 				break;
 			}
@@ -156,15 +153,41 @@ public class Cruise extends BaseSelenium
 		}
 	}
 	
-	public static String GetMonthFromCheckinCalendar()
+	// bladd
+	public static String GetMonthFromCheckinCalendar(CalendarType type)
 	{
-		return driver.findElement(By.xpath("(//th[@class='switch'])[1]")).getText().toLowerCase().split(" ")[0].trim();
-		
-		
-		// (//th[@class='switch'])[4]
+		if(type.equals(CalendarType.checkIn))
+		{
+			return driver.findElement(By.xpath("(//th[@class='switch'])[1]")).getText().toLowerCase().split(" ")[0].trim();			
+		}
+		else
+		{
+			return driver.findElement(By.xpath("(//th[@class='switch'])[4]")).getText().toLowerCase().split(" ")[0].trim();
+		}
 	}
+
 	
-	/* doesn't work
+	public static void DatePractice() throws ParseException
+	{
+		//DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY HH:mm:ss");
+		Date date = new Date();
+		System.out.println(dateFormat.format(date));
+		
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(date);
+		calendar.add(Calendar.DATE, 30);
+		date = calendar.getTime();
+		
+		System.out.println(dateFormat.format(date));
+		
+		//CalendarPropertiesForSelection.ShowTimes();
+
+	}
+
+	
+	
+
 	// https://stackoverflow.com/questions/1086396/java-date-month-difference
 	public static final long getMonthsDifference(Date date1, Date date2) 
 	{
@@ -183,5 +206,5 @@ public class Cruise extends BaseSelenium
 	    return m1.until(m2, ChronoUnit.MONTHS) + 1;
 	}	
 	
-	*/	
+	
 }

@@ -15,12 +15,12 @@ public class DatePickerCruise extends BaseSelenium
 	@BeforeClass
 	public static void setUp()    throws Exception
 	{
-
+		/*
 		SetupDiver();
 		SetupConfig();
 		OpenUrlThree();
 		Thread.sleep(3000);
-
+		*/
 		////input[@placeholder='Check in']
 	}
 	
@@ -30,9 +30,9 @@ public class DatePickerCruise extends BaseSelenium
 	{
 	
 		// Cruise.GetCalendartest();
-		Cruise.SetupStartEndDates();
-		Cruise.MakeDateSelections();
-
+		//Cruise.SetupStartEndDates();
+		//Cruise.MakeDateSelections();
+		Cruise.DatePractice();
 		
 		
 
@@ -44,8 +44,8 @@ public class DatePickerCruise extends BaseSelenium
 	public void Finish() 
 	{
 		JOptionPane.showConfirmDialog(null, "MM");
-		driver.close();
-		driver.quit();
+		//driver.close();
+		//driver.quit();
 	}
 	
 	
