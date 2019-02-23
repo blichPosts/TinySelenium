@@ -46,24 +46,34 @@ public class Cruise extends BaseSelenium
 	
 	public static void SetupStartEndDates() throws ParseException
 	{
-		LocalDateTime now = LocalDateTime.now();
-
-		System.out.println(now);
+		Date dateTempOne;
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY"); // setup format to match format in UI after a date is picked.
 		
+		LocalDateTime now = LocalDateTime.now();
 		CalendarPropertiesForSelection.currentMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.currentDay = now.getDayOfMonth();
 
-		now = now.plusDays(17);
+		now = now.plusDays(15);
 		CalendarPropertiesForSelection.checkInMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.checkInDay = now.getDayOfMonth();
-		//Date dateCheckIn = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date		
-		now = LocalDateTime.now();
 		
-		now = now.plusDays(66);
+		dateTempOne = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date		
+		//System.out.println(dateFormat.format(dateTempOne));
+		//ShowText(dateFormat.format(dateTempOne));
+		CalendarPropertiesForSelection.dateCheckin = dateFormat.format(dateTempOne); 
+		
+		now = LocalDateTime.now(); // set now back to current date
+		now = now.plusDays(30);
 		CalendarPropertiesForSelection.checkOutMonth = now.getMonth().toString().toLowerCase();
 		CalendarPropertiesForSelection.checkOutDay = now.getDayOfMonth();
-		//Date dateCheckOut = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date
+
+		dateTempOne = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date		
+		//System.out.println(dateFormat.format(dateTempOne));
+		//ShowText(dateFormat.format(dateTempOne));
+		CalendarPropertiesForSelection.dateCheckOut = dateFormat.format(dateTempOne);
 		
+		// GetMonthsDifference(dateTempOne, dateTempOne); // still bad
+		//Date dateCheckOut = Date.from( now.atZone( ZoneId.systemDefault()).toInstant()); // convert localDateTime to Date
 		// format messed up ?
 		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		//Date dateCheckOut2  =  sdf.parse(sdf.format(dateCheckOut)); 
@@ -75,7 +85,7 @@ public class Cruise extends BaseSelenium
 
 	}
 	
-	// bladd
+	// select check-in and checkout date.
 	public static void MakeDateSelections() throws InterruptedException
 	{
 		// wait for search button and date picker that will be clicked.
@@ -83,16 +93,35 @@ public class Cruise extends BaseSelenium
 		WaitForElementClickable(By.xpath("//input[@placeholder='Check in']"), 5, "");
 		
 		driver.findElement(By.xpath("//input[@placeholder='Check in']")).click(); // bring up check-in date picker
-		Thread.sleep(1500);
+		Thread.sleep(500);
 
-		// make sure month is correct
+		// select month and date for check-in
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkInMonth, CalendarType.checkIn);
 		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkInDay));
 		
-		Thread.sleep(15000);
+		Thread.sleep(500); // at this point the check-out calendar will automatically open
 		
+		// select month and date for check-out
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkOutMonth, CalendarType.checkOut);
 		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
+	}
+	
+	public static void MakeSelectionAndVerifyInfo() throws InterruptedException
+	{
+		WaitForElementClickable(By.xpath("//input[@id='citiesInput']"), 7,"");
+		//driver.findElement(By.xpath("//input[@id='citiesInput']")).sendKeys("Burlington massachusetts, united states");
+		driver.findElement(By.xpath("//input[@id='citiesInput']")).sendKeys("Boston");
+
+		
+		WaitForElementClickable(By.xpath("(//div[@class='easy-autocomplete-container']/ul/li/div)[1]"), 7,"");
+		Thread.sleep(1000);
+		driver.findElement(By.xpath("(//div[@class='easy-autocomplete-container']/ul/li)[1]")).click();		
+
+		WaitForElementClickable(By.xpath("//i[@class='icon_set_1_icon-66']"), 7,"");
+		driver.findElement(By.xpath("//i[@class='icon_set_1_icon-66']")).click();
+		
+		Assert.assertEquals(driver.findElement(By.xpath("//input[@placeholder='Check in']")).getAttribute("value"), CalendarPropertiesForSelection.dateCheckin);
+		Assert.assertEquals(driver.findElement(By.xpath("//input[@placeholder='Check out']")).getAttribute("value"), CalendarPropertiesForSelection.dateCheckOut);
 	}
 	
 	public static void SelectDate(String dayNumber)
@@ -100,7 +129,7 @@ public class Cruise extends BaseSelenium
 		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td[text()='" + dayNumber + "']"));
 		List<WebElement> eleListFiltered = new ArrayList<WebElement>();
 		
-		for(WebElement ele : eleList)
+		for(WebElement ele : eleList) // store dates in visible date picker 
 		{
 			if(ele.isDisplayed())
 			{
@@ -113,7 +142,7 @@ public class Cruise extends BaseSelenium
 			Assert.fail("Found too many dates in calendar");
 		}
 		
-		if(eleListFiltered.size() > 1)
+		if(eleListFiltered.size() > 1) // there may be two occurrences of date to select. if so, select the second date.
 		{
 			eleListFiltered.get(1).click();
 		}
@@ -127,6 +156,7 @@ public class Cruise extends BaseSelenium
 	public static void SetupSelectedMonth(String monthToMoveTo, CalendarType type) throws InterruptedException
 	{
 		String xpath  = "";
+		boolean foundMonth = false;
 		
 		if(type.equals(CalendarType.checkIn))
 		{
@@ -138,22 +168,27 @@ public class Cruise extends BaseSelenium
 		}
 		
 		
-		for(int x = 0; x < 7; x++)
+		for(int x = 0; x < 12; x++)
 		{
 			if(GetMonthFromCheckinCalendar(type).equals(monthToMoveTo))
 			{
+				foundMonth = true;
 				break;
 			}
-			else
+			else // move to next month
 			{
 				WaitForElementClickable(By.xpath(xpath), 3, "");
 				driver.findElement(By.xpath(xpath)).click();
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 			}
+		}
+		
+		if(!foundMonth)
+		{
+			Assert.fail("Failed to find month in Check Out calendar.");
 		}
 	}
 	
-	// bladd
 	public static String GetMonthFromCheckinCalendar(CalendarType type)
 	{
 		if(type.equals(CalendarType.checkIn))
@@ -170,14 +205,16 @@ public class Cruise extends BaseSelenium
 	public static void DatePractice() throws ParseException
 	{
 		//DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		DateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY HH:mm:ss");
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY");
 		Date date = new Date();
 		System.out.println(dateFormat.format(date));
+
 		
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		calendar.add(Calendar.DATE, 30);
 		date = calendar.getTime();
+
 		
 		System.out.println(dateFormat.format(date));
 		

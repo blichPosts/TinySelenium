@@ -1,5 +1,7 @@
 package tests;
 
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 
 import org.testng.annotations.AfterClass;
@@ -8,33 +10,25 @@ import org.testng.annotations.Test;
 
 import actions.Cruise;
 
-public class DatePickerCruise extends BaseSelenium 
+public class Scenarios extends BaseSelenium
 {
 
 	@BeforeClass
-	public static void setUp()    throws Exception
+	public static void setUp() throws Exception 
 	{
 		SetupDiver();
 		SetupConfig();
-		OpenUrlThree();
+		OpenUrlScenarios();
 		Thread.sleep(3000);
 		////input[@placeholder='Check in']
 	}
 	
 	
 	@Test
-	public void FooBarCruise() throws Exception 
+	public void FooBarEcenario() throws Exception 
 	{
-	
-		//Cruise.GetCalendartest();
-		Cruise.SetupStartEndDates();
-		Cruise.MakeDateSelections();
-		Cruise.MakeSelectionAndVerifyInfo();
-		//Cruise.DatePractice(); // hack only
-		
-		
-
-
+		actions.Scenarios.RunTestWaitForMissingElementsFastMethods();
+		ShowText("Test done");
 	}
 	
 	
@@ -45,6 +39,8 @@ public class DatePickerCruise extends BaseSelenium
 		driver.close();
 		driver.quit();
 	}
+	
+	
 	
 	
 	

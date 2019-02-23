@@ -69,6 +69,13 @@ public class BaseSelenium
         driver.manage().window().maximize();
 	}
 	
+	public static void OpenUrlScenarios()
+	{
+        driver.navigate().to(config.getProperty("UrlScenario"));
+        driver.manage().window().maximize();
+	}
+	
+	
 	public static void CallGoogle()
 	{
         // driver.get("http://www.google.com/");
@@ -105,21 +112,7 @@ public class BaseSelenium
 		    }
 		}	
 	}
-	
-	
-	public static void WaitForElementClickable(By by, int waitTime, String message)
-	{
-	    try
-	    {
-	    	WebDriverWait wait = new WebDriverWait(driver, waitTime);
-	    	wait.until(ExpectedConditions.elementToBeClickable(by));
-	    }
-	    catch (WebDriverException e)
-	    {
-	        System.out.println("Error in WaitForElementClickable: " + e.getMessage());
-	    	throw new WebDriverException(message);
-	    }
-	}	
+
 	
 	public static boolean WaitForElementClickableBooleanNoThrow(By by, int waitTime)
 	{
@@ -134,8 +127,78 @@ public class BaseSelenium
 	    }
 	    return true;
 	}	
+
+	public static void WaitForElementClickable(By by, int waitTime, String message)
+	{
+	    try
+	    {
+	    	WebDriverWait wait = new WebDriverWait(driver, waitTime);
+	    	wait.until(ExpectedConditions.elementToBeClickable(by));
+	    }
+	    catch (WebDriverException e)
+	    {
+	        System.out.println("Error in WaitForElementClickable: " + e.getMessage());
+	    	throw new WebDriverException(message);
+	    }
+	}	
+	
+	// BAD !!!!!!!!!!!! ***************************************************
+	// wait for an element to be not click-able. if an element is not click-able return true else false.  
+	public static boolean WaitForElementNotClickableBoolean(By by, int waitTime)
+	{
+	    try
+	    {
+	    	WebDriverWait wait = new WebDriverWait(driver, waitTime);
+	    	wait.until(ExpectedConditions.not(ExpectedConditions.elementToBeClickable(by))); // doesn't work.
+	    	// wait.until(ExpectedConditions.not.elementToBeClickable(by)); // error in compile
+	    	// https://stackoverflow.com/questions/42840725/selenium-expectedconditions-not-elementtobeclickable?rq=1
+	    	//WebDriverWait(driver, 3).until(ExpectedConditions.elementToBeClickable(By.id("")));
+	    }
+	    catch (WebDriverException e)
+	    {
+	    	return false;
+	    }
+	    return true;
+	}	
+
+	
+	public static boolean WaitTestForElementNotClickable(By by, int waitTime)
+	{
+		long currentTime= System.currentTimeMillis();
+		long endTime = currentTime + (waitTime * 1000);
+		boolean elementNotClickable = false;
+		
+		while(System.currentTimeMillis() < endTime) 
+		{
+			if(!WaitForElementClickableBooleanNoThrow(by, 1)) // wait 1 second for response on each loop
+			{
+				elementNotClickable = true;
+				break;
+			}
+		}
+		return elementNotClickable;
+	}
 	
 	
+	public static boolean WaitTestForElementNotVisible(By by, int waitTime) throws Exception
+	{
+		long currentTime= System.currentTimeMillis();
+		long endTime = currentTime + (waitTime * 1000);
+		boolean elementNotVisible = false;
+		
+		while(System.currentTimeMillis() < endTime) 
+		{
+			if(!WaitForElementVisibleNoThrowBoolean(by, 1)) // wait 1 second for response on each loop
+			{
+				elementNotVisible = true;
+				break;
+			}
+		}
+		return elementNotVisible;
+	}
+	
+	
+
 	public static boolean WaitForElementVisible(By by, int timeOut) throws Exception 
 	{
 	    try
@@ -147,6 +210,20 @@ public class BaseSelenium
         {
 	        //System.out.println(e.toString());
 	        throw new Exception(e.toString());
+        }	    
+	    return true;
+	}	
+	
+	public static boolean WaitForElementVisibleNoThrowBoolean(By by, int timeOut) throws Exception 
+	{
+	    try
+	    {
+			WebDriverWait wait = new WebDriverWait(driver, timeOut);
+		    wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+	    }
+        catch (Exception e)
+        {
+        	return false;
         }	    
 	    return true;
 	}	
