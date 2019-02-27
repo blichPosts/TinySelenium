@@ -71,7 +71,8 @@ public class BaseSelenium
 	
 	public static void OpenUrlScenarios()
 	{
-        driver.navigate().to(config.getProperty("UrlScenario"));
+        //driver.navigate().to(config.getProperty("UrlScenario"));
+        driver.navigate().to(config.getProperty("UrlScenarioMain")); 
         driver.manage().window().maximize();
 	}
 	
@@ -142,6 +143,23 @@ public class BaseSelenium
 	    }
 	}	
 	
+	public static void WaitForElementClickable(By by, int waitTime)
+	{
+	    try
+	    {
+	    	WebDriverWait wait = new WebDriverWait(driver, waitTime);
+	    	wait.until(ExpectedConditions.elementToBeClickable(by));
+	    }
+	    catch (WebDriverException e)
+	    {
+	        System.out.println("Error in WaitForElementClickable: " + e.getMessage());
+	    	throw new WebDriverException(e.getLocalizedMessage());
+	    }
+	}	
+	
+	
+	
+	
 	// BAD !!!!!!!!!!!! ***************************************************
 	// wait for an element to be not click-able. if an element is not click-able return true else false.  
 	public static boolean WaitForElementNotClickableBoolean(By by, int waitTime)
@@ -209,7 +227,8 @@ public class BaseSelenium
         catch (Exception e)
         {
 	        //System.out.println(e.toString());
-	        throw new Exception(e.toString());
+	        //throw new Exception(e.toString());
+	        throw new WebDriverException(e.toString()); // 2/27/19	        
         }	    
 	    return true;
 	}	
