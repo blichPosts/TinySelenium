@@ -39,10 +39,11 @@ public class Scenarios extends BaseSelenium
 		//actions.Scenarios.MultipleWindowsPopUp(); // good
 		//actions.Scenarios.Hovers(); // good
 		//actions.Scenarios.NestedFrames(); // good
-		actions.Scenarios.IFrame();
+		//actions.Scenarios.IFrame(); // good
+		//actions.Scenarios.KeyPress(); // good 
+		//actions.Scenarios.JavaScriptAlerts(); // good 
+		actions.Scenarios.MultipleWindowaPopOut();
 		
-		// key presses
-		// java script alerts.
 		
 		ShowText("Test done");
 	}

@@ -2,19 +2,22 @@ package actions;
 
 import java.awt.AWTException;
 import java.awt.Robot;
+import java.awt.event.KeyEvent;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
 
 import tests.BaseSelenium;
+
+
+// About actions
+// https://stackoverflow.com/questions/49459040/why-do-we-need-robot-class-when-we-have-actions-class-in-selenium
 
 public class Scenarios extends BaseSelenium 
 {
@@ -320,7 +323,7 @@ public class Scenarios extends BaseSelenium
 		ShowText("Windows after app creates new window.");
 		ShowWindowsHandles();
 		
-		// now have to find the new window, which should not be the 'mainWindow'. and switch to it.
+		// now have to find the new window, which should not be the 'mainWindow', and switch to it.
 		// then wait for the click-able element
 		Set<String> setOfWindowHandles = driver.getWindowHandles();
 		for(String str : setOfWindowHandles)
@@ -349,6 +352,59 @@ public class Scenarios extends BaseSelenium
 		driver.findElement(By.xpath("//a[contains(text(),'Click Here')]")).click();
 	}
 
+	public static void MultipleWindowaPopOut() throws InterruptedException
+	{
+		boolean foundWindow = false;
+		Set<String> namesOfPopupWindows = new HashSet<String>(); 
+		
+		driver.navigate().to("http://book.theautomatedtester.co.uk/chapter1");
+		WaitForElementClickable(By.xpath("//body//div[5]"), 7);
+		
+		String mainWindow = driver.getWindowHandle();
+		
+		ShowText("Windows at start");
+		ShowWindowsHandles();
+
+		ShowText("Click new window");
+		driver.findElement(By.xpath("//body//div[5]")).click();
+		Thread.sleep(1000);
+
+		// //body//div[6]
+		
+		
+		
+		
+		ShowText("Wait for new window");
+		Thread.sleep(3000);
+		
+		ShowText("Windows after app creates new window.");
+		ShowWindowsHandles();
+		
+		// now have to find the new window, which should not be the 'mainWindow', and switch to it.
+		// then wait for the click-able element
+		Set<String> setOfWindowHandles = driver.getWindowHandles();
+		for(String str : setOfWindowHandles)
+		{
+			if(!str.equalsIgnoreCase(mainWindow))
+			{
+				driver.switchTo().window(str);
+				WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 5);
+				foundWindow = true;
+				break;
+			}
+		}
+
+		if(!foundWindow)
+		{
+			Assert.fail("Failed to find window.");
+		}
+
+		WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 7);
+		
+		
+	}
+	
+	
 	public static void Hovers() throws InterruptedException
 	{
 		
@@ -437,6 +493,7 @@ public class Scenarios extends BaseSelenium
 		
 	}
 	
+	// put in text and select an item in pull-down - frames are used. 
 	public static void IFrame() throws Exception
 	{
 		// now go to iframe
@@ -444,13 +501,112 @@ public class Scenarios extends BaseSelenium
 		
 		WaitForElementVisible(By.xpath("//h3[contains(text(),'An iFrame containing the TinyMCE WYSIWYG Editor')]"), 5);
 		
+		// got to inner frame to send text.
 		driver.switchTo().frame("mce_0_ifr");
 		Thread.sleep(2000);
-		driver.findElement(By.xpath("//html")).sendKeys("Test");
+		driver.findElement(By.xpath("//html/body")).clear();
+		driver.findElement(By.xpath("//html/body")).sendKeys("Test text in window...");
+		
+		// go to default frame to use pull-down.
+		driver.switchTo().defaultContent();
+		Thread.sleep(2000);
+		
+		driver.findElement(By.xpath("//button/span[text()='Format']")).click(); // this shows pull-down list
+		// new Select(driver.findElement(By.xpath("//div[@id='mceu_18']"))).selectByIndex(1); // problems in iFrame
+		
+		WaitForElementClickable(By.xpath("//div[@id='mceu_35']"), 3);
+		driver.findElement(By.xpath("//div[@id='mceu_35']")).click();
 	}
 	
 	
+	// NOTE: can't send lower case - lower case is set to upper case when run this manually in tutorial 
+	public static void KeyPress() throws Exception
+	{
+		// http://the-internet.herokuapp.com/key_presses
+		driver.navigate().to("http://the-internet.herokuapp.com/key_presses");
+		
+		WaitForElementVisible(By.xpath("//h3[contains(text(),'Key Presses')]"), 7);
+		
+		Thread.sleep(3000);
+
+		// this only works for modifier keys -- https://en.wikipedia.org/wiki/Modifier_key
+	    //Actions act = new Actions(driver);
+	    //act.keyDown(Keys.ALT).perform(); // send modifier
+	    //Thread.sleep(3000);
+		
+		char myChar = 'a';
+		
+	    Robot r = new Robot();
+	    /*
+	    r.keyPress(KeyEvent.VK_N);
+	    // r.keyPress(myChar); // nope 
+	    
+	    r.delay(5000); // delay in milliseconds.
+
+	    r.keyRelease(KeyEvent.VK_N);
+	    r.delay(5000); // delay in milliseconds.
+	    
+	    int keyCode = KeyEvent.getExtendedKeyCodeForChar('b');
+	    
+	    r.keyPress(keyCode);
+	    r.delay(1000); // delay in milliseconds.
+	    */
+
+	    r.keyPress(KeyEvent.VK_SHIFT);
+	    r.delay(1000); // delay in milliseconds.
+	    
+	    r.keyPress(KeyEvent.VK_B);
+	    r.delay(1000); // delay in milliseconds.
+
+	    r.keyRelease(KeyEvent.VK_SHIFT);
+	    r.delay(5000); // delay in milliseconds.
+	    
+	    r.keyRelease(KeyEvent.VK_B);
+	    r.delay(5000); // delay in milliseconds.
+	}
 	
+	public static void JavaScriptAlerts() throws InterruptedException
+	{
+		
+		driver.navigate().to("http://the-internet.herokuapp.com/javascript_alerts");
+		
+		WaitForElementClickable(By.xpath("//button[@onclick='jsAlert()']"), 5);
+		driver.findElement(By.xpath("//button[@onclick='jsAlert()']")).click(); // click alert 1
+		
+		// verify text 
+		Alert alert = driver.switchTo().alert();
+		ShowText(alert.getText());
+		Assert.assertEquals(alert.getText(), "I am a JS Alert");
+		Thread.sleep(500);
+
+		// verify accept
+		alert.accept();
+		Thread.sleep(500);
+		Assert.assertEquals(driver.findElement(By.xpath("//p[@id='result']")).getText(), "You successfuly clicked an alert");
+
+		WaitForElementClickable(By.xpath("//button[@onclick='jsConfirm()']"), 5);
+		driver.findElement(By.xpath("//button[@onclick='jsConfirm()']")).click(); // click alert 2
+		Thread.sleep(500);
+		alert = driver.switchTo().alert();
+		alert.dismiss();
+		Thread.sleep(500);
+		Assert.assertEquals(driver.findElement(By.xpath("//p[@id='result']")).getText(), "You clicked: Cancel");
+		
+		// send info to pop-up -- NOTE!!! you don't visually see the info sent to the pop-up from selenium. 
+		WaitForElementClickable(By.xpath("//button[@onclick='jsPrompt()']"), 5);
+		driver.findElement(By.xpath("//button[@onclick='jsPrompt()']")).click(); // click alert 3
+		Thread.sleep(1500);
+		alert = driver.switchTo().alert();
+		ShowText(alert.getText());
+		Thread.sleep(5000);
+		String textToSend = "Foo Bar";
+		alert.sendKeys(textToSend);
+		alert.accept();
+		
+		Assert.assertEquals(driver.findElement(By.xpath("//p[@id='result']")).getText(), "You entered: " + textToSend);
+		
+		
+	}
 	
 	
 	// //////////////////////////////////////////////////////////////////////////////////////
