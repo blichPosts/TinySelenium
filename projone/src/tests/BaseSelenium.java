@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -48,8 +49,24 @@ public class BaseSelenium
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--disable-extensions");
 		options.addArguments("disable-infobars");  // <-- Line added by Ana. Needed because with the chromedriver 2.28, there's an info bar that we don't want to have when browser is launched
+		// options.setPageLoadStrategy(PageLoadStrategy.NONE); // trying to remove rendering error in window pop-out exercises - no luck plus messed other stuff up.
 		driver = new ChromeDriver(options);			
 	}
+	
+	public static void SetupDiverIE()
+	{
+		String projectPath = ""; 
+		File currentDirectory = new File(".");
+		projectPath = currentDirectory.getAbsolutePath();
+		System.out.println(projectPath);
+		System.setProperty("webdriver.chrome.driver", projectPath + "\\chromedriver.exe");
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--disable-extensions");
+		options.addArguments("disable-infobars");  // <-- Line added by Ana. Needed because with the chromedriver 2.28, there's an info bar that we don't want to have when browser is launched
+		// options.setPageLoadStrategy(PageLoadStrategy.NONE); // trying to remove rendering error in window pop-out exercises - no luck plus messed other stuff up.
+		driver = new ChromeDriver(options);			
+	}
+	
 	
 	public static void OpenUrlOne() // BAD
 	{
