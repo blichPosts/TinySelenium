@@ -4,11 +4,16 @@ import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+
+import org.apache.http.impl.conn.DefaultSchemePortResolver;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
@@ -352,56 +357,135 @@ public class Scenarios extends BaseSelenium
 		driver.findElement(By.xpath("//a[contains(text(),'Click Here')]")).click();
 	}
 
-	public static void MultipleWindowaPopOut() throws InterruptedException
+	// keep track of main window and two pop-out windows that are not pop-up boxes but windows.
+	// ///////////////////////////////////////////////////////////////////////////////////////////////
+	// 		This is a hack of experimenting with set and window minimize/maximize 
+	//      could have just stored window names and kept track of whick small window was in front.
+	// //////////////////////////////////////////////////////////////////////////////////////////////
+	public static void MultipleWindowsPopOut() throws InterruptedException
 	{
 		boolean foundWindow = false;
-		Set<String> namesOfPopupWindows = new HashSet<String>(); 
+		String mainWindow = "";
+		Set<String> namesOfPopupWindows = new TreeSet<String>();
 		
 		driver.navigate().to("http://book.theautomatedtester.co.uk/chapter1");
 		WaitForElementClickable(By.xpath("//body//div[5]"), 7);
 		
-		String mainWindow = driver.getWindowHandle();
+		mainWindow = driver.getWindowHandle();
+		ShowText("main window before po-up selected " + mainWindow);
 		
-		ShowText("Windows at start");
+		ShowText("One windows at start");
 		ShowWindowsHandles();
-
-		ShowText("Click new window");
+		
+		// /////////////////////////////////
+		// click first pop-out window
+		// /////////////////////////////////
+		ShowText("Click new window"); 
 		driver.findElement(By.xpath("//body//div[5]")).click();
 		Thread.sleep(1000);
-
-		// //body//div[6]
 		
-		
-		
-		
-		ShowText("Wait for new window");
-		Thread.sleep(3000);
-		
-		ShowText("Windows after app creates new window.");
+		ShowText("Windows after selected first new window.");
 		ShowWindowsHandles();
 		
-		// now have to find the new window, which should not be the 'mainWindow', and switch to it.
+		// now have to find the first pop-out window, which should not be the 'mainWindow', and store it
 		// then wait for the click-able element
-		Set<String> setOfWindowHandles = driver.getWindowHandles();
-		for(String str : setOfWindowHandles)
+		Set<String> setOfAllWindowHandles = driver.getWindowHandles(); // get all windows
+		for(String str : setOfAllWindowHandles)
 		{
-			if(!str.equalsIgnoreCase(mainWindow))
+			if(!str.equals(mainWindow))
 			{
 				driver.switchTo().window(str);
-				WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 5);
+				WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 5); // this waits for click-able part in pop-out
+				namesOfPopupWindows.add(str);
 				foundWindow = true;
 				break;
 			}
 		}
+		
+		if(!foundWindow){Assert.fail("Failed to find window.");}
 
-		if(!foundWindow)
+		driver.switchTo().window(mainWindow);
+		Thread.sleep(1000);
+		
+		// /////////////////////////////////
+		// click second pop-out window
+		// /////////////////////////////////
+		ShowText("Click another new window"); 
+		WaitForElementClickable(By.xpath("//body//div[6]"), 5);
+		driver.findElement(By.xpath("//body//div[6]")).click();
+		Thread.sleep(1000);
+		
+		foundWindow = false;
+		
+		// add the new pop-up to the 'namesOfPopupWindows'. first get all existing windows into 'setOfAllWindowHandles' set.
+		setOfAllWindowHandles.clear();
+		setOfAllWindowHandles = driver.getWindowHandles(); // get all windows
+		for(String str : setOfAllWindowHandles)
 		{
-			Assert.fail("Failed to find window.");
+			if(!str.equals(mainWindow) && !namesOfPopupWindows.contains(str)) // can't be main window and can't be window already added to list
+			{
+				driver.switchTo().window(str);
+				WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 5); // this waits for click-able part in pop-out
+				namesOfPopupWindows.add(str);
+				foundWindow = true;
+				break;
+			}
+		}
+		
+		if(!foundWindow){Assert.fail("Failed to find window.");}
+		
+		System.out.println("Set size = " + namesOfPopupWindows.size());
+
+		driver.switchTo().window(mainWindow); 
+		Thread.sleep(1000);
+		
+		driver.manage().window().setPosition(new Point(-2000, 0)); // minimize main window
+		ShowText("Long wait after main window close.");
+		Thread.sleep(5000);
+		
+		ShowWindowsHandles();
+		
+		ShowText("Minimize two small windows.");
+		
+		for(String str : namesOfPopupWindows)
+		{
+			driver.switchTo().window(str);
+			Thread.sleep(1000);
+			driver.manage().window().setPosition(new Point(-2000, 0)); // minimize window // there is no 'driver.manage().window().minimize()' 
+		}
+		
+		Thread.sleep(2000);
+
+		ShowText("Maximize and delete, one at a time, small windows.");
+		
+		for(String str : namesOfPopupWindows)
+		{
+			driver.switchTo().window(str);
+			Thread.sleep(1000);
+			driver.manage().window().maximize();
+			Thread.sleep(2000);
+			ShowText("A");
+			WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 5); // this waits for click-able part in pop-out
+			ShowText("B");
+			driver.findElement(By.xpath("//p[@id='closepopup']")).click();
+			ShowText("C");
+			ShowText("one done wait 1 second.");
+			Thread.sleep(2000);
 		}
 
-		WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 7);
 		
+		ShowText("long wait after minimize pop-ups.");
+		Thread.sleep(5000);
 		
+		Thread.sleep(1000);
+		driver.switchTo().window(mainWindow);
+		Thread.sleep(1000);
+		driver.manage().window().maximize();
+		
+		ShowText("Should be only one window left");
+		ShowWindowsHandles();
+		
+		//WaitForElementClickable(By.xpath("//p[@id='closepopup']"), 7);
 	}
 	
 	
@@ -615,7 +699,7 @@ public class Scenarios extends BaseSelenium
 	
 	public static void ShowWindowsHandles()
 	{
-		ShowText("Current Windows ------------------------------------------");
+		ShowText("Current Window handles ------------------------------------------");
 		Set<String> setOfWindowHandles = driver.getWindowHandles();
 		
 		for(String str : setOfWindowHandles)
