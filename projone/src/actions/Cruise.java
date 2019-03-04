@@ -95,15 +95,19 @@ public class Cruise extends BaseSelenium
 		driver.findElement(By.xpath("//input[@placeholder='Check in']")).click(); // bring up check-in date picker
 		Thread.sleep(500);
 
+		Debug("26");
+		/*
+		
 		// select month and date for check-in
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkInMonth, CalendarType.checkIn);
 		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkInDay));
 		
-		Thread.sleep(500); // at this point the check-out calendar will automatically open
+		Thread.sleep(1500); // at this point the check-out calendar will automatically open
 		
 		// select month and date for check-out
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkOutMonth, CalendarType.checkOut);
 		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
+		*/
 	}
 	
 	public static void MakeSelectionAndVerifyInfo() throws InterruptedException
@@ -128,6 +132,7 @@ public class Cruise extends BaseSelenium
 	{
 		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td[text()='" + dayNumber + "']"));
 		List<WebElement> eleListFiltered = new ArrayList<WebElement>();
+		int numEnabled = 0;
 		
 		for(WebElement ele : eleList) // store dates in visible date picker 
 		{
@@ -222,9 +227,6 @@ public class Cruise extends BaseSelenium
 
 	}
 
-	
-	
-
 	// https://stackoverflow.com/questions/1086396/java-date-month-difference
 	public static final long getMonthsDifference(Date date1, Date date2) 
 	{
@@ -242,6 +244,30 @@ public class Cruise extends BaseSelenium
 
 	    return m1.until(m2, ChronoUnit.MONTHS) + 1;
 	}	
+	
+	public static void Debug(String dayToSelect)
+	{
+		boolean dayToSelectFound = false;
+		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td"));
+		
+		for(WebElement ele: eleList)
+		{
+			if(ele.isDisplayed())
+			{
+				//System.out.println(ele.getText());
+				if(ele.getAttribute("class").equals("day "))
+				{
+					if(ele.getText().equals(dayToSelect))
+					{
+						ShowText("found " + ele.getText());						
+					}
+
+				}
+			}
+			
+		}
+	}
+	
 	
 	
 }
