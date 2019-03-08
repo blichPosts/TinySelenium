@@ -40,7 +40,7 @@ public class bobTest_SimpleOrder extends BaseSelenium
 		//Orders.PassTwo();
 		Orders.PassThree(); 
 		Orders.PassFour(); 
-		
+		Orders.PassFive();
 		
 		ShowText("Test Done.");
 		

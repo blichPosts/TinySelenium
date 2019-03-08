@@ -29,7 +29,7 @@ public class DatePickerCruise extends BaseSelenium
 		//Cruise.GetCalendartest();
 		Cruise.SetupStartEndDates();
 		Cruise.MakeDateSelections();
-		//Cruise.MakeSelectionAndVerifyInfo();
+		Cruise.MakeSearchSelectionAndVerifyInfo();
 		//Cruise.DatePractice(); // hack only
 		
 		

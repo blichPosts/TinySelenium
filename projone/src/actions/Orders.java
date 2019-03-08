@@ -173,6 +173,70 @@ public class Orders extends BaseSelenium
 		WaitForElementClickable(By.xpath("//a[@title='Previous']"), 7, "");
 
 	}
+
+	// this removes the items in the cart pull-down
+	public static void PassFive() throws Exception
+	{
+		int waitTime = 15;
+		OpenShoppingCartPullDown();
+		List<WebElement> pulldownList = driver.findElements(By.xpath("//a[@class='ajax_cart_block_remove_link']"));
+		int expectedSize = 0;
+		
+		if(pulldownList.size() == 0){Assert.fail("Failed to get list of delete selectors in cart pulldown list");}
+		
+		expectedSize = pulldownList.size() - 1;
+		
+		long currentTime= System.currentTimeMillis();
+		long endTime = currentTime + (waitTime * 1000);
+		
+		while(System.currentTimeMillis() < endTime) 
+		{
+			WaitForElementClickable(By.xpath("(//a[@class='ajax_cart_block_remove_link'])[1]"), 5);
+			driver.findElement(By.xpath("(//a[@class='ajax_cart_block_remove_link'])[1]")).click(); // remove item 
+			WaitForCartItemGone(5, expectedSize);
+			
+			// get items left in the shop cart pull-down. break if none left
+			pulldownList.clear();
+			pulldownList = driver.findElements(By.xpath("//a[@class='ajax_cart_block_remove_link']"));
+			
+
+			if(pulldownList.size() != 0)
+			{
+				expectedSize = pulldownList.size() - 1;
+			}
+			else
+			{
+				ShowText("Cart is emptied");
+				break;
+			}
+		}
+		
+		OpenShoppingCartPullDown();
+		CloseShoppingCartPullDown();
+		driver.navigate().refresh();
+		
+		WaitForElementVisible(By.xpath("//span[contains(text(),'Summary')]"), 5); // verify all orders are gone. 
+		
+		Assert.assertEquals(driver.findElement(By.xpath("//p[@class='alert alert-warning']")).getText(), "Your shopping cart is empty.");
+	}
+	
+	public static void WaitForCartItemGone(int waitTime, int expectedSize) throws InterruptedException // bladd
+	{
+		long currentTime= System.currentTimeMillis();
+		long endTime = currentTime + (waitTime * 1000);
+		List<WebElement> pulldownList;
+		boolean foundExpectedSize = false;
+		
+		while(System.currentTimeMillis() < endTime) 
+		{
+			Thread.sleep(1000);
+			pulldownList = driver.findElements(By.xpath("//a[@class='ajax_cart_block_remove_link']"));
+			if(pulldownList.size() == expectedSize)
+			{
+				break;
+			}
+		}
+	}
 	
 	// see testNg class for description
 	public static void PassThree() throws Exception
@@ -278,12 +342,8 @@ public class Orders extends BaseSelenium
 		double tempDouble = 0;
 		int tempInt = 0;
 
-		// open pull-down with hover.
-		WebElement pullDowm = driver.findElement(By.xpath("//b[contains(text(),'Cart')]"));
-		Actions action = new Actions(driver);
-		action.moveToElement(pullDowm).perform(); 
-		Thread.sleep(1000);
-
+		OpenShoppingCartPullDown();
+		
 		// store properties in each cart item
 		List<WebElement> singleItemTotalCost = driver.findElements(By.xpath("//span[@class='price']"));		
 		List<WebElement> quantities = driver.findElements(By.xpath("//span[@class='quantity']"));
@@ -511,5 +571,25 @@ public class Orders extends BaseSelenium
 		WaitForMainPageToLoad();		
 	}
 
+	public static void OpenShoppingCartPullDown() throws InterruptedException
+	{
+		// open pull-down with hover. 
+		WebElement pullDowm = driver.findElement(By.xpath("//b[contains(text(),'Cart')]"));
+		Actions action = new Actions(driver);
+		action.moveToElement(pullDowm).perform(); 
+		WaitForElementClickable(By.xpath("//span[contains(text(),'Check out')]"), 5);
+	}
+	
+	public static void CloseShoppingCartPullDown() throws InterruptedException
+	{
+		// open pull-down with hover. 
+		WebElement pullDowm = driver.findElement(By.xpath("//b[contains(text(),'Cart')]"));
+		Actions action = new Actions(driver);
+		action.moveToElement(pullDowm).perform(); 
+		WaitTestForElementNotClickable(By.xpath("//span[contains(text(),'Check out')]"), 5);
+		driver.findElement(By.xpath("//input[@id='search_query_top']")).click();
+	}
+	
+	
 }
  

@@ -17,6 +17,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import helpers.CalendarPropertiesForSelection;
+import net.sourceforge.htmlunit.cyberneko.HTMLElements.ElementList;
+
 import org.testng.*;
 import tests.BaseSelenium;
 
@@ -95,22 +97,24 @@ public class Cruise extends BaseSelenium
 		driver.findElement(By.xpath("//input[@placeholder='Check in']")).click(); // bring up check-in date picker
 		Thread.sleep(500);
 
-		Debug("26");
-		/*
-		
 		// select month and date for check-in
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkInMonth, CalendarType.checkIn);
-		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkInDay));
+		//SelectDate(String.valueOf(CalendarPropertiesForSelection.checkInDay));
+		SelectDateFixed(String.valueOf(CalendarPropertiesForSelection.checkInDay)); 
+
+		ShowText("passed checkin select");
 		
 		Thread.sleep(1500); // at this point the check-out calendar will automatically open
 		
 		// select month and date for check-out
 		SetupSelectedMonth(CalendarPropertiesForSelection.checkOutMonth, CalendarType.checkOut);
-		SelectDate(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
-		*/
+
+		//SelectDate(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
+		SelectDateFixed(String.valueOf(CalendarPropertiesForSelection.checkOutDay));
+
 	}
 	
-	public static void MakeSelectionAndVerifyInfo() throws InterruptedException
+	public static void MakeSearchSelectionAndVerifyInfo() throws InterruptedException
 	{
 		WaitForElementClickable(By.xpath("//input[@id='citiesInput']"), 7,"");
 		//driver.findElement(By.xpath("//input[@id='citiesInput']")).sendKeys("Burlington massachusetts, united states");
@@ -132,7 +136,6 @@ public class Cruise extends BaseSelenium
 	{
 		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td[text()='" + dayNumber + "']"));
 		List<WebElement> eleListFiltered = new ArrayList<WebElement>();
-		int numEnabled = 0;
 		
 		for(WebElement ele : eleList) // store dates in visible date picker 
 		{
@@ -162,7 +165,7 @@ public class Cruise extends BaseSelenium
 	{
 		String xpath  = "";
 		boolean foundMonth = false;
-		
+
 		if(type.equals(CalendarType.checkIn))
 		{
 			xpath = "(//th[@class='next'])[1]";
@@ -171,7 +174,6 @@ public class Cruise extends BaseSelenium
 		{
 			xpath = "(//th[@class='next'])[4]";
 		}
-		
 		
 		for(int x = 0; x < 12; x++)
 		{
@@ -245,29 +247,31 @@ public class Cruise extends BaseSelenium
 	    return m1.until(m2, ChronoUnit.MONTHS) + 1;
 	}	
 	
-	public static void Debug(String dayToSelect)
+	// this finds the correct date selection in calendar with many similar date numbers.
+	public static void SelectDateFixed(String dayToSelect)
 	{
 		boolean dayToSelectFound = false;
-		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td"));
-		
-		for(WebElement ele: eleList)
-		{
-			if(ele.isDisplayed())
-			{
-				//System.out.println(ele.getText());
-				if(ele.getAttribute("class").equals("day "))
-				{
-					if(ele.getText().equals(dayToSelect))
-					{
-						ShowText("found " + ele.getText());						
-					}
+		List<WebElement> eleList = driver.findElements(By.xpath("//tbody/tr/td")); // get all available dates in pickers
 
+		for(WebElement ele: eleList) // go through all dates found above.
+		{
+			if(ele.isDisplayed()) // is date displayed (in picker that's showing)
+			{
+				if(ele.getAttribute("class").equals("day ")) // is class attribute 'day ' - this means the date is a legitimate selection
+				{
+					if(ele.getText().equals(dayToSelect)) // if date is the requested date, select date.
+					{
+						ele.click();
+						dayToSelectFound = true;
+						break;
+					}
 				}
 			}
-			
+		}
+		
+		if(!dayToSelectFound)
+		{
+			Assert.fail("Did not find date number requested. Date number requested is " + dayToSelect);
 		}
 	}
-	
-	
-	
 }
