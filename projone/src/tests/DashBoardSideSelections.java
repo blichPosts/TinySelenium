@@ -20,12 +20,17 @@ public class DashBoardSideSelections extends BaseSelenium
 		@Test
 		public void FooBar() throws Exception 
 		{
+			
 			DashBoardWithSideSelections.GetURL();
 			DashBoardWithSideSelections.Login();
+			DashBoardWithSideSelections.SideStuff();
+			
+			/*
 			DashBoardWithSideSelections.SelectThemes();
 
 			DashBoardWithSideSelections.SelectNewOrder();
 			DashBoardWithSideSelections.WorkWithLeftPane();
+			*/
 			
 			ShowText("Test Done");
 			

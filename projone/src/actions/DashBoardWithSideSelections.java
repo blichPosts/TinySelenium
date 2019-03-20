@@ -1,5 +1,7 @@
 package actions;
 
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -30,14 +32,17 @@ public class DashBoardWithSideSelections extends BaseSelenium
 	
 	public static void SelectThemes() throws Exception
 	{
-		Actions action = new Actions(driver); 
+		Actions action = new Actions(driver);
+		SetupSide();
+		/*
 		//WaitForElementClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5);
 		if(WaitTestForElementNotClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5))
 		{
 			ClickLeftPaneOpen();
 			WaitForElementClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5);
 		}
-		
+		*/
+		WaitForElementClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5);
 		WebElement ele = driver.findElement(By.xpath("//div[contains(text(),'Appearance')]"));
 		action.moveToElement(ele).perform();
 		WaitForElementClickable(By.xpath("//a[text()='Themes']"), 5);
@@ -50,6 +55,38 @@ public class DashBoardWithSideSelections extends BaseSelenium
 		WaitForElementClickable(By.xpath("//span[@id='footer-thankyou']//a[contains(text(),'WordPress')]"), 10);		
 	}
 	
+	public static void SideStuff() throws InterruptedException
+	{
+		SetupSide();
+		//List<WebElement> elementList = driver.findElements(By.cssSelector("#adminmenuwrap>ul>li>ul>li"));
+		List<WebElement> elementList = driver.findElements(By.cssSelector("#adminmenuwrap>ul>li"));
+		
+		for(WebElement element : elementList)
+		{
+			System.out.println(element.getText());
+			if(element.getAttribute("class").contains("wp-has-submenu wp-not-current-submenu menu-top menu-icon-generic toplevel"))
+			{
+				//System.out.println("found");
+				//System.out.println(element.getText());
+				Actions action = new Actions(driver);
+				action.moveToElement(element).perform();
+				Thread.sleep(3000);
+			}
+		}
+
+		
+	}
+	
+	public static void SetupSide() throws InterruptedException
+	{
+		Actions action = new Actions(driver); 
+		//WaitForElementClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5);
+		if(WaitTestForElementNotClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5))
+		{
+			ClickLeftPaneOpen();
+			WaitForElementClickable(By.xpath("//div[contains(text(),'Appearance')]"), 5);
+		}
+	}
 	
 	public static void WorkWithLeftPane() throws InterruptedException
 	{

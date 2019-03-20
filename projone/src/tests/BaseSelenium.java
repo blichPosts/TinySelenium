@@ -13,9 +13,13 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -27,7 +31,7 @@ public class BaseSelenium
 	public static Properties config;
 	public static FileInputStream fis;
 	public static JFrame frame;	
-
+	public static boolean russian = false;
 
 	public static void SetupConfig() throws IOException
 	{
@@ -48,6 +52,21 @@ public class BaseSelenium
 		System.setProperty("webdriver.chrome.driver", projectPath + "\\chromedriver.exe");
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--disable-extensions");
+
+		/*
+		if(russian)
+		{
+			Map<String, Object> prefs = new HashMap<String, Object>();
+			Map<String, Object> langs = new HashMap<String, Object>();
+			//langs.put("ja", "en");
+			langs.put("ru", "en");
+			prefs.put("translate", "{'enabled' : true}");
+			prefs.put("translate_whitelists", langs);
+			options.setExperimentalOption("prefs", prefs);		
+		}
+		*/
+		//options = Options();
+		
 		options.addArguments("disable-infobars");  // <-- Line added by Ana. Needed because with the chromedriver 2.28, there's an info bar that we don't want to have when browser is launched
 		// options.setPageLoadStrategy(PageLoadStrategy.NONE); // trying to remove rendering error in window pop-out exercises - no luck plus messed other stuff up.
 		driver = new ChromeDriver(options);			
@@ -174,7 +193,19 @@ public class BaseSelenium
 	    }
 	}	
 	
-	
+	public static void WaitForElementPresent(By by, int waitTime)
+	{
+	    try
+	    {
+	    	WebDriverWait wait = new WebDriverWait(driver, waitTime);
+	    	wait.until(ExpectedConditions.presenceOfElementLocated(by));
+	    }
+	    catch (WebDriverException e)
+	    {
+	        System.out.println("Error in WaitForElement present: " + e.getMessage());
+	    	throw new WebDriverException(e.getLocalizedMessage());
+	    }
+	}	
 	
 	
 	// BAD !!!!!!!!!!!! ***************************************************
