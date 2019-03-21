@@ -19,17 +19,23 @@ import tests.BaseSelenium;
 
 public class HttpRequestActions extends BaseSelenium
 {
-	public static String accessToken = "WAIkClj3VW5UeFAZbx5680oTuprd";
+	public static String accessToken = "m2qkTBoEG4vKdVMs2tEgrBx9f8vo";
 	
 	
 	// https://community.liferay.com/forums/-/message_boards/message/34225286
+	// https://www.programcreek.com/java-api-examples/?class=org.json.JSONObject&method=getJSONArray
+	// https://stackoverflow.com/questions/31019391/how-to-fetch-all-the-nodes-and-child-nodes-of-json-object-in-java -- see last solution
 	public static void Connect()    throws IOException, JSONException 
 	{
-		System.out.println("start");
+		boolean foundCurrency = true; 
+		JSONObject three = new JSONObject();
+		
+		System.out.println("start ---");
+		
 		String url = "https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/regions?type=ALL";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		System.out.println(con);
+		System.out.println("HttpURLConnection returned = " + con);
 	
 		// optional default is GET
 		con.setRequestMethod("GET");
@@ -56,21 +62,47 @@ public class HttpRequestActions extends BaseSelenium
 		}
 		in.close();
 		
-		ShowText("Response Code = " + response.toString());
+		ShowText("Response = " + response.toString());
 
-        JSONArray jasonArray = new JSONArray(response.toString().split("\"" + "regions" + "\"" + " : ")[1]);        
+        JSONArray jasonArray = new JSONArray(response.toString().split("\"" + "regions" + "\"" + " : ")[1]); // setup array of nodes in response        
         
-        for(int index = 0; index < jasonArray.length(); index++)
+        
+        for(int index = 0; index < jasonArray.length(); index++) // go through each node
         {
-        	JSONObject  jo = jasonArray.getJSONObject(index);
-        	//JSONObject activeNodeJsonObject = jo.getJSONObject("currency");
-        	ShowText(jo.getString("id"));
-        	ShowText(jo.getString("name"));
+        	ShowText("------------------------------------------------------------------");
+        	JSONObject  jObject = jasonArray.getJSONObject(index);
+        	JSONObject two = jObject.getJSONObject("_meta");
         	
-        	if(index == 5) {
+        	try // currency node may not be there - try/catch.
+        	{
+        		three = jObject.getJSONObject("currency");
+        	}
+        	catch (Exception e)
+        	{
+            	// ShowText(e.getMessage());    
+            	foundCurrency = false;
+        	}
+        	finally
+        	{
+        		if(foundCurrency)
+        		{
+        			ShowText(three.getString("name"));
+        		}
+        		else
+        		{
+        			ShowText("---- currency node null");
+            		foundCurrency = true;
+        		}
+        	}
+        	
+        	ShowText(jObject.getString("abbreviation"));
+        	ShowText(two.getString("href"));
+        	ShowText(jObject.getString("id"));
+        	ShowText(jObject.getString("name"));
+        	
+        	if(index == 25) {
         		break;
         	}
-        		
         }
         
         ShowText("Done");
@@ -92,8 +124,8 @@ public class HttpRequestActions extends BaseSelenium
 		
 		con.setRequestMethod("POST");
 		con.setRequestProperty("Accept-Language","en-US,en;q=0.5");	
-		//con.setRequestProperty("Content-Type","application/json"); // this was needed - was used in Normandy
-		// new below
+		//con.setRequestProperty("Content-Type","application/json"); // this was not needed - was needed in Normandy - maybe because 
+		// new below - this is what is in Ready API Http log
 		//con.setRequestProperty("Accept-Encoding","gzip,deflate");
 		//con.setRequestProperty("Content-Length","0");
 		//con.setRequestProperty("Host","oauthqa.tangoe.com");
@@ -125,11 +157,11 @@ public class HttpRequestActions extends BaseSelenium
 		//print result
 		System.out.println("Response ' " + response.toString());
 
-		Assert.assertEquals(con.getResponseCode(), "200");
+		Assert.assertEquals(con.getResponseCode(), 200);
 		
 		accessToken = response.toString().split(":")[4].replace("\"", "").replace("}",""); // NOTE: this could be done using json array.
 		
-		System.out.println(accessToken);
+		System.out.println("Access token = " + accessToken);
 	}
 	
 	public static void SetToken(String fullResponse)
