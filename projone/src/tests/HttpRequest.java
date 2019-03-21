@@ -24,6 +24,8 @@ public class HttpRequest extends BaseSelenium
 	public void Httprequest() throws Exception 
 	{
 		HttpRequestActions.Connect();
+		//HttpRequestActions.SetToken();
+
 	}
 	
 	
