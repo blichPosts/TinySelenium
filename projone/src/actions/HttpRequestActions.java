@@ -19,7 +19,7 @@ import tests.BaseSelenium;
 
 public class HttpRequestActions extends BaseSelenium
 {
-	public static String accessToken = "m2qkTBoEG4vKdVMs2tEgrBx9f8vo";
+	public static String accessToken = "dGiyJl8RzZIl9B8CdGuPYVW52AVx";
 	
 	
 	// https://community.liferay.com/forums/-/message_boards/message/34225286
@@ -28,7 +28,7 @@ public class HttpRequestActions extends BaseSelenium
 	public static void Connect()    throws IOException, JSONException 
 	{
 		boolean foundCurrency = true; 
-		JSONObject three = new JSONObject();
+		JSONObject currencyNode = new JSONObject();
 		
 		System.out.println("start ---");
 		
@@ -73,9 +73,14 @@ public class HttpRequestActions extends BaseSelenium
         	JSONObject  jObject = jasonArray.getJSONObject(index);
         	JSONObject two = jObject.getJSONObject("_meta");
         	
+        	currencyNode = GetNode(currencyNode, "currency");
+        		
+        	// https://www.fusioncharts.com/charts/column-bar-charts/simple-column-chart
+        	
+        	/*
         	try // currency node may not be there - try/catch.
         	{
-        		three = jObject.getJSONObject("currency");
+        		currencyNode = jObject.getJSONObject("currency");
         	}
         	catch (Exception e)
         	{
@@ -86,7 +91,7 @@ public class HttpRequestActions extends BaseSelenium
         	{
         		if(foundCurrency)
         		{
-        			ShowText(three.getString("name"));
+        			ShowText(currencyNode.getString("name"));
         		}
         		else
         		{
@@ -94,7 +99,7 @@ public class HttpRequestActions extends BaseSelenium
             		foundCurrency = true;
         		}
         	}
-        	
+        	*/
         	ShowText(jObject.getString("abbreviation"));
         	ShowText(two.getString("href"));
         	ShowText(jObject.getString("id"));
@@ -111,6 +116,26 @@ public class HttpRequestActions extends BaseSelenium
 	// ////////////////////////////////////////////////////////////
 	// 						helpers
 	// //////////////////////////////////////////////////////////// 
+	
+	public static JSONObject GetNode(JSONObject jsonObject ,String nodeName){
+		
+		JSONObject handle = new JSONObject();
+		boolean foundNode = true;
+		
+		try{
+			handle = jsonObject.getJSONObject(nodeName);
+		}
+		catch (Exception e){
+			foundNode = false;
+		}
+		
+		if(foundNode){
+			return handle;
+		}
+		else {
+			return null;
+		}
+	}
 	
 	//https://www.mkyong.com/java/how-to-send-http-request-getpost-in-java/ --- KEEP THIS URL FOR REFERENCE ON POSTS !!!!!!!!!!!!!!!!!!!!
 	public static void SetToken() throws IOException

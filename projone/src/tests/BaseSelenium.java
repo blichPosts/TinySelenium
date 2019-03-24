@@ -43,6 +43,12 @@ public class BaseSelenium
 		System.out.println(config.getProperty("UrlTrainOne"));
 	}
 	
+	public static void DashURL()
+	{
+        driver.navigate().to("https://www.fusioncharts.com/charts/column-bar-charts/simple-column-chart");
+        driver.manage().window().maximize();
+	}
+	
 	public static void SetupDiver()
 	{
 		String projectPath = ""; 
