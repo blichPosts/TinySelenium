@@ -2,20 +2,27 @@ package actions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.testng.Assert;
 
 import static io.restassured.RestAssured.*;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
 import io.restassured.parsing.Parser;
+import io.restassured.path.json.JsonPath;
 //import io.restassured.matcher.RestAssuredMatchers.*;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import tests.BaseSelenium;
 
 import static org.hamcrest.Matchers.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 
@@ -28,25 +35,28 @@ import java.util.List;
 // https://github.com/rest-assured/rest-assured/wiki/GettingStarted#non-maven-users - see 'Non-maven users'
 public class RestAssuredActions extends BaseSelenium 
 {
-		public static void SanityCheck() throws JSONException {
+	public static String accessToken = "ePp8zM9tbBwpCqntmvjiiD01VZR0";
+	
+	public static void SanityCheck() throws JSONException {
 			
-			//make get request to fetch capital of norway
-			Response resp = get("http://restcountries.eu/rest/v1/name/norway");
+		//make get request to fetch capital of norway
+		Response resp = get("http://restcountries.eu/rest/v1/name/norway");
 			
-			System.out.println(resp.getStatusCode());
+		System.out.println(resp.getStatusCode());
 			
-			//Fetching response in JSON
-			JSONArray jsonResponse = new JSONArray(resp.asString());
+		//Fetching response in JSON
+		JSONArray jsonResponse = new JSONArray(resp.asString());
 			
-			//Fetching value of capital parameter
-			String capital = jsonResponse.getJSONObject(0).getString("capital");
+		//Fetching value of capital parameter
+		String capital = jsonResponse.getJSONObject(0).getString("capital");
 			
-			//Asserting that capital of Norway is Oslo
-			Assert.assertEquals(capital, "Oslo");
-		}
+		//Asserting that capital of Norway is Oslo
+		// Assert.assertEquals(capital, "Oslo");
+	}
 		
-		// https://www.testingexcellence.com/parse-json-response-rest-assured/ -- also see Related: sending a post. 
+		// https://www.testingexcellence.com/parse-json-response-rest-assured/ 
 		// https://www.testingexcellence.com/rest-assured-post-request/ -- this is post
+		// https://www.toolsqa.com/rest-assured/post-request-using-rest-assured/ another post
 		public static void CollectionWork()
 		{
 	        Response response = doGetRequest("https://jsonplaceholder.typicode.com/users");
@@ -60,12 +70,79 @@ public class RestAssuredActions extends BaseSelenium
 	        String  names = response.jsonPath().getString("company.name");     
 	        System.out.println(streets);
 	        System.out.println(names);
-	        
-	        
+		}
+
+		// https://www.testingexcellence.com/rest-assured-post-request/ -- NOTE !!!!! ----- good page that also includes how to send post body.
+		public static void PostToken() throws JSONException
+		{
+			RestAssured.baseURI ="https://oauthqa.tangoe.com/as/token.oauth2";
+
+			Response response = 
+			
+			 given().urlEncodingEnabled(true)
+			.param("client_id", "392d0283466b4e00be8e8b8062db5f9f")
+			.param("client_secret", "3c684c3220e740ef92E7177A32AE978D")
+			.param("grant_type", "password")
+			.param("scope", "MOBPROC")
+			.param("username", "command://ana.pace.xx1#xx1")
+			.param("password", "tngo777")
+			.post(baseURI)
+            .then()
+            .contentType(ContentType.JSON)
+            //.statusCode(200) // gives error
+            .extract()
+            .response();
+
+			Assert.assertEquals(response.getStatusCode(), 200);
+
+			//response.print(); // see all
+
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get("access_token").toString());
+			accessToken = jsonPathEvaluator.get("access_token").toString();
+
+			
+	    	/*
+	    	Map<String,Object> headerMap = new HashMap<String,Object>();
+	    	headerMap.put("client_id", "392d0283466b4e00be8e8b8062db5f9f");
+	    	headerMap.put("client_secret", "3c684c3220e740ef92E7177A32AE978D");
+	    	headerMap.put("grant_type", "password");
+	    	headerMap.put("scope", "MOBPROC");
+	    	headerMap.put("username", "command://ana.pace.xx1#xx1");	    
+	    	headerMap.put("password", "tngo777");	    	
+			*/
 		}
 		
 		
+		
+		public static void Mobproc()
+		{
+			Response response = DoGetRequestMobproc("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/regions?type=PROCUREMENT");
+			Assert.assertEquals(response.getStatusCode(), 200);
+			
+			// System.out.println(response.print()); // this will show everything in response in json format. EVERYTHING !!!
+			
+			// https://stackoverflow.com/questions/21166137/rest-assured-is-it-possible-to-extract-value-from-request-json
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get("regions.countryCode").toString());
+			System.out.println(jsonPathEvaluator.get("regions[3].countryCode").toString());			
+			System.out.println(jsonPathEvaluator.get("regions.currency.code").toString());			
+		}
 
+		public static void MobprocTwo()
+		{
+			Response response = DoGetRequestMobprocHeaderList("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/regions?type=PROCUREMENT", CreateHeadersMap());
+			Assert.assertEquals(response.getStatusCode(), 200);
+			
+			// System.out.println(response.print()); // this will show everything in response in json format. EVERYTHING !!!
+			
+			// https://stackoverflow.com/questions/21166137/rest-assured-is-it-possible-to-extract-value-from-request-json
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get("regions.countryCode").toString());
+			System.out.println(jsonPathEvaluator.get("regions[3].countryCode").toString());			
+			System.out.println(jsonPathEvaluator.get("regions.currency.code").toString());			
+		}
+		
 		
 		// /////////////////////////////////////////////////////////////////////////////////
 		// 								helpers
@@ -83,15 +160,42 @@ public class RestAssuredActions extends BaseSelenium
 	                        then().contentType(ContentType.JSON).extract().response();
 	    }
 
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	    public static Response DoGetRequestMobproc(String endpoint)  // MOBPROC
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        return
+	                 given()//.header("Content-Type", ContentType.JSON)
+	                	    //.header("Accept", ContentType.JSON)
+	                		.header("Authorization", "Bearer " + accessToken)	                		
+	                		.header("X-TNGO-TENANT", "XX1")
+	                		.header("client_id", "392d0283466b4e00be8e8b8062db5f9f")
+	                		.header("client_secret", "3c684c3220e740ef92E7177A32AE978D")
+	                		.when().get(endpoint).
+	                        then().contentType(ContentType.JSON).extract().response();
+	    }
+
+	    public static Response DoGetRequestMobprocHeaderList(String endpoint, Map<String, Object> headersMap)  // MOBPROC 
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        return
+	                 given()//.header("Content-Type", ContentType.JSON)
+	                	    //.header("Accept", ContentType.JSON)
+	                		.headers(headersMap)	                		
+	                		.when().get(endpoint).
+	                        then().contentType(ContentType.JSON).extract().response();
+	    }
+	    
+	    public static Map<String, Object> CreateHeadersMap()
+	    {
+	    	Map<String,Object> headerMap = new HashMap<String,Object>();
+	    	headerMap.put("Authorization", "Bearer " + accessToken);
+	    	headerMap.put("X-TNGO-TENANT", "XX1");
+	    	headerMap.put("client_id", "392d0283466b4e00be8e8b8062db5f9f");
+	    	headerMap.put("client_secret", "3c684c3220e740ef92E7177A32AE978D");
+	    	return headerMap;
+	    }
+	    
+	    
 }

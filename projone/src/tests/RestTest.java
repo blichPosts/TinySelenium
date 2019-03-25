@@ -20,10 +20,12 @@ public class RestTest {
 	public void RestAssured() throws Exception 
 	{
 	
-		// RestAssuredActions.SanityCheck();
-		RestAssuredActions.CollectionWork();
-		
-
+		//RestAssuredActions.SanityCheck();
+		//RestAssuredActions.CollectionWork();
+		//RestAssuredActions.PostToken();
+		//RestAssuredActions.Mobproc();
+		RestAssuredActions.MobprocTwo(); // this has list for headers.
+		//RestAssuredActions.PostToken();
 	}
 	
 	
