@@ -34,5 +34,6 @@
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0-deps/org.apache.sling.javax.activation-0.1.0.jar"/>
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0-deps/tagsoup-1.2.1.jar"/>
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0.jar"/>
+	<classpathentry kind="lib" path="lib_312/testng-6.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
