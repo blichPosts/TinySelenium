@@ -35,7 +35,9 @@ import java.util.Map;
 // https://github.com/rest-assured/rest-assured/wiki/GettingStarted#non-maven-users - see 'Non-maven users'
 public class RestAssuredActions extends BaseSelenium 
 {
-	public static String accessToken = "ePp8zM9tbBwpCqntmvjiiD01VZR0";
+	public static Map<String , Object > parametersMap = new HashMap<String,Object>();
+	
+	public static String accessToken = "c9AerYOsKUppyQe4srTmAa4aCOuN";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -143,11 +145,26 @@ public class RestAssuredActions extends BaseSelenium
 			System.out.println(jsonPathEvaluator.get("regions.currency.code").toString());			
 		}
 		
+		public static void MobprocAssetsDevices()	{
+			//Response response = DoGetRequestMobprocHeaderList("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/assets/devices?limit=10&offset=0", CreateHeadersMap());
+			
+			// String params = "offset=0,limit=5,companyEmployeeId=3174020727"; // setup query parameters
+			String params = "offset=100,limit=10"; // setup query parameters			
+			
+			
+			// make call by getting always-needed header parameters and parameters setup in params variable. 
+			Response response = DoGetRequestMobprocQueryHeaderList("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/assets/devices", CreateHeadersMap(), CreateQueryParamsMap(params));
+			
+			Assert.assertEquals(response.getStatusCode(), 200);
+
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get("devices._meta.totalCount").toString());
+			System.out.println(jsonPathEvaluator.get("devices.items.employee.companyEmployeeId").toString());
+		}
 		
 		// /////////////////////////////////////////////////////////////////////////////////
 		// 								helpers
 		// ///////////////////////////////////////////////////////////////////////////////// 
-		
 		
 		// get helper
 	    public static Response doGetRequest(String endpoint) 
@@ -186,6 +203,19 @@ public class RestAssuredActions extends BaseSelenium
 	                		.when().get(endpoint).
 	                        then().contentType(ContentType.JSON).extract().response();
 	    }
+
+	    public static Response DoGetRequestMobprocQueryHeaderList(String endpoint, Map<String, Object> headersMap, Map<String, Object> querysMap)  // MOBPROC 
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        return
+	                 given()//.header("Content-Type", ContentType.JSON)
+	                	    //.header("Accept", ContentType.JSON)
+	                		.headers(headersMap)	                		
+	                		.params(querysMap)
+	                		.when().get(endpoint).
+	                        then().contentType(ContentType.JSON).extract().response();
+	    }
 	    
 	    public static Map<String, Object> CreateHeadersMap()
 	    {
@@ -197,5 +227,25 @@ public class RestAssuredActions extends BaseSelenium
 	    	return headerMap;
 	    }
 	    
+	    public static Map<String, Object> CreateQueryParamsMap()
+	    {
+	    	Map<String,Object> paramsMap = new HashMap<String,Object>();
+	    	paramsMap.put("offset", "0");
+	    	paramsMap.put("limit", "5");
+	    	return paramsMap;
+	    }
 	    
+	    // return a map of the parameters passed in.
+	    public static Map<String, Object> CreateQueryParamsMap(String params)
+	    {
+	    	String [] paramsArray = params.split(",");
+	    	Map<String,Object> paramsMap = new HashMap<String,Object>();	    	
+	    	
+	    	for(String str : paramsArray)
+	    	{
+	    		ShowText(str);
+	    		paramsMap.put(str.split("=")[0],str.split("=")[1]);
+	    	}
+	    	return paramsMap;
+	    }
 }
