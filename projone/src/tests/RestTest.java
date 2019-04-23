@@ -26,7 +26,7 @@ public class RestTest {
 		//RestAssuredActions.Mobproc();
 		//RestAssuredActions.MobprocTwo(); // this has list for headers.
 		RestAssuredActions.MobprocAssetsDevices();
-		//RestAssuredActions.PostToken();
+		// RestAssuredActions.PostToken();
 	}
 	
 	

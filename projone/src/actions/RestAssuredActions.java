@@ -37,7 +37,7 @@ public class RestAssuredActions extends BaseSelenium
 {
 	public static Map<String , Object > parametersMap = new HashMap<String,Object>();
 	
-	public static String accessToken = "c9AerYOsKUppyQe4srTmAa4aCOuN";
+	public static String accessToken = "1h6RLvn9u7WUXKp40XTCf9zAbyIj";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -148,7 +148,7 @@ public class RestAssuredActions extends BaseSelenium
 		public static void MobprocAssetsDevices()	{
 			//Response response = DoGetRequestMobprocHeaderList("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/assets/devices?limit=10&offset=0", CreateHeadersMap());
 			
-			// String params = "offset=0,limit=5,companyEmployeeId=3174020727"; // setup query parameters
+			//String params = "offset=0,limit=5,companyEmployeeId=3174020727"; // setup query parameters
 			String params = "offset=100,limit=10"; // setup query parameters			
 			
 			
