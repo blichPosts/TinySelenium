@@ -115,7 +115,32 @@ public class RestAssuredActions extends BaseSelenium
 			*/
 		}
 		
-		
+		// the URL below was found by going to deva, finding the API swagger for /authentication/login - Authenticate and receive token
+		// look under "authentication" in swagger
+		public static void postTokenSisense() {
+			RestAssured.baseURI ="http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login";
+			//RestAssured.baseURI = "http://dc1devapp08.prod.tangoe.com:8081/api/v1/authentication/login"; // sil's mail 
+			
+
+			Response response = 
+				
+			 given().urlEncodingEnabled(true)
+			.param("username", "bob.lichtenfels")
+			.param("password", "Tangoe1!")
+			.post(baseURI)
+	        .then()
+	        .contentType(ContentType.JSON)
+	        //.statusCode(200) // gives error
+	        .extract()
+	        .response();
+			
+			System.out.println(response.getStatusCode());
+			
+			System.out.println(response);
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get());
+
+		}
 		
 		public static void Mobproc()
 		{

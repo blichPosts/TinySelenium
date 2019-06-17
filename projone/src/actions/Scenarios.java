@@ -724,6 +724,26 @@ public class Scenarios extends BaseSelenium
 		
 	}
 
+
+	public static void AtlasGoView() throws Exception {
+		driver.navigate().to("https://tangoe.invisionapp.com/share/ESSIYUC72AT#/screens/368877273");
+		ShowText("One");
+		WaitForElementPresent(By.xpath("//a[contains(text(),'1033825397')]"), 5);
+		driver.findElement(By.xpath("//a[contains(text(),'1033825397')]")).click();
+		WaitForElementPresent(By.cssSelector(".hotspot"), 5);
+		driver.findElement(By.cssSelector(".hotspot")).click();
+		Thread.sleep(3000);
+		
+		WaitForElementPresent(By.cssSelector("a.hotspot"), 5);
+		driver.findElement(By.cssSelector("a.hotspot")).click();
+		Thread.sleep(3000);
+		
+		WaitForElementPresent(By.cssSelector("a.hotspot"), 5);
+		driver.findElement(By.cssSelector("a.hotspot")).click();
+		Thread.sleep(3000);
+		
+		
+	}
 	
 	
 	

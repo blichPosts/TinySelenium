@@ -43,8 +43,8 @@ public class Scenarios extends BaseSelenium
 		//actions.Scenarios.KeyPress(); // good 
 		//actions.Scenarios.JavaScriptAlerts(); // good 
 		// actions.Scenarios.MultipleWindowsPopOut(); // good - hacked
-		actions.Scenarios.HashMap();
-		
+		// actions.Scenarios.HashMap(); // this is for weird user code - goView
+		actions.Scenarios.AtlasGoView();
 		
 		ShowText("Test done");
 	}
