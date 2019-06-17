@@ -6,8 +6,13 @@ import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 import org.apache.http.impl.conn.DefaultSchemePortResolver;
 import org.openqa.selenium.Alert;
@@ -691,6 +696,35 @@ public class Scenarios extends BaseSelenium
 		
 		
 	}
+
+	
+	public static Map<String, String> HashMap()
+	{
+		
+		final HashMap<String, String> users = new HashMap<>();
+		users.put("gene.curtis@tangoe.com", "admin123");
+		users.put("bill.weld@tangoe.com", "user123");		
+		Object[] crunchifyKeys = users.keySet().toArray();
+		final Object key = crunchifyKeys[new Random().nextInt(crunchifyKeys.length)];
+		Map<String, String> userMap  = new HashMap<String, String>() {/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+		{
+		    put(key.toString(), users.get(key));
+		}};
+		
+		
+		
+		
+		return userMap;
+		
+		
+		
+	}
+
+	
 	
 	
 	// //////////////////////////////////////////////////////////////////////////////////////

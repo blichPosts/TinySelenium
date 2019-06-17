@@ -37,7 +37,7 @@ public class RestAssuredActions extends BaseSelenium
 {
 	public static Map<String , Object > parametersMap = new HashMap<String,Object>();
 	
-	public static String accessToken = "1h6RLvn9u7WUXKp40XTCf9zAbyIj";
+	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -102,7 +102,7 @@ public class RestAssuredActions extends BaseSelenium
 			JsonPath jsonPathEvaluator = response.jsonPath();
 			System.out.println(jsonPathEvaluator.get("access_token").toString());
 			accessToken = jsonPathEvaluator.get("access_token").toString();
-
+			System.out.println("Done with token");
 			
 	    	/*
 	    	Map<String,Object> headerMap = new HashMap<String,Object>();
