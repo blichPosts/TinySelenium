@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 
+import helpers.SisenseUser;
+
 import static io.restassured.RestAssured.*;
 
 import io.restassured.RestAssured;
@@ -20,6 +22,7 @@ import tests.BaseSelenium;
 import static org.hamcrest.Matchers.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +41,12 @@ public class RestAssuredActions extends BaseSelenium
 	public static Map<String , Object > parametersMap = new HashMap<String,Object>();
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
+	
+	public static String sisenseAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiNWNkMmVhMmIxYzA5MmEyNGY4NjI0MmI5IiwiYXBpU2VjcmV0IjoiOTU5MGZjZTMtZGFjOC1iNjAxLTRhNDAtODZlYjczNTU3YTc1IiwiaWF0IjoxNTYwODY4MDkxfQ.RTXjDQkTIHa0NYLoIqcWcQ0eOrWys5SXP2HcbFzAGc8";
+
+	public static String tempString = "";
+	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
+	public static String mainEndpoint = "http://nadevgvbi01a.corp.tangoe.com:8081/api/v1";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -113,33 +122,6 @@ public class RestAssuredActions extends BaseSelenium
 	    	headerMap.put("username", "command://ana.pace.xx1#xx1");	    
 	    	headerMap.put("password", "tngo777");	    	
 			*/
-		}
-		
-		// the URL below was found by going to deva, finding the API swagger for /authentication/login - Authenticate and receive token
-		// look under "authentication" in swagger
-		public static void postTokenSisense() {
-			RestAssured.baseURI ="http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login";
-			//RestAssured.baseURI = "http://dc1devapp08.prod.tangoe.com:8081/api/v1/authentication/login"; // sil's mail 
-			
-
-			Response response = 
-				
-			 given().urlEncodingEnabled(true)
-			.param("username", "bob.lichtenfels")
-			.param("password", "Tangoe1!")
-			.post(baseURI)
-	        .then()
-	        .contentType(ContentType.JSON)
-	        //.statusCode(200) // gives error
-	        .extract()
-	        .response();
-			
-			System.out.println(response.getStatusCode());
-			
-			System.out.println(response);
-			JsonPath jsonPathEvaluator = response.jsonPath();
-			System.out.println(jsonPathEvaluator.get());
-
 		}
 		
 		public static void Mobproc()
@@ -273,4 +255,100 @@ public class RestAssuredActions extends BaseSelenium
 	    	}
 	    	return paramsMap;
 	    }
+	    
+	    // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	    // 
+	    // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	    public static Response DoGetRequestSisense(String endpoint)  // MOBPROC
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        return
+	                 given()//.header("Content-Type", ContentType.JSON)
+	                	    //.header("Accept", ContentType.JSON)
+	                		.header("Authorization", "Bearer " + sisenseAccessToken)	                		
+	                		.when().get(endpoint).
+	                        then().contentType(ContentType.JSON).extract().response();
+	    }
+
+		// the URL below was found by going to deva, finding the API swagger for /authentication/login - Authenticate and receive token
+		// look under "authentication" in sisense swagger page
+		public static void postTokenSisense() {
+			//RestAssured.baseURI ="http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login";
+			//RestAssured.baseURI = "http://dc1devapp08.prod.tangoe.com:8081/api/v1/authentication/login"; // sil's mail 
+			
+		    String payload = "{\n" +
+		            "  \"username\": \"bob.lichtenfels@tangoe.com\",\n" +
+		            "  \"password\": \"Tangoe1!\"\n" +
+		            "}";			
+			
+		    ShowText(payload);
+		    Response response = 
+		            given().urlEncodingEnabled(true)
+		            .contentType(ContentType.JSON)
+		            .body(payload)
+		            //.post("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login")
+		            .post(mainEndpoint + "/authentication/login")
+		            .then()
+		            //.statusCode(200)
+		            .extract()
+		            .response();
+		    
+			System.out.println(response.getStatusCode());
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get());
+			ShowText(jsonPathEvaluator.get("access_token").toString());
+		}
+		
+		public static void getSisenseUsers() {
+	        int cntr = 0;
+	        int expectedListSize = 0;
+			// Response response = DoGetRequestSisense("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/users");
+			Response response = DoGetRequestSisense(mainEndpoint + "/users");
+			
+	        List<String> jsonResponse = response.jsonPath().getList("$");
+	        Assert.assertEquals(response.getStatusCode(), 200);
+	        expectedListSize = jsonResponse.size();
+			
+	        List<String> listOfUserNames = setupStringListFromResponseAndJsonSelector(response, "userName");
+	        Assert.assertTrue(listOfUserNames.size() == expectedListSize);
+	        List<String> listOfIds = setupStringListFromResponseAndJsonSelector(response, "_id");	        
+	        Assert.assertTrue(listOfIds.size() == expectedListSize);
+
+	        
+	        for(int x = 0; x < expectedListSize; x++) {
+	        	SisenseUser user = new SisenseUser(listOfUserNames.get(x), listOfIds.get(x));
+	        	listOfSisenseUsers.add(user);
+	        }
+	        
+	        for(SisenseUser user : listOfSisenseUsers) {
+	        	user.show();
+	        }
+		}
+
+		public static void filterOnUser() { // zz
+			String userNameIn = "bob.lichtenfels@tangoe.com";
+
+			Response response = DoGetRequestSisense(mainEndpoint +  "/users?userName=" + userNameIn);
+			System.out.println(response.getStatusCode());
+			
+			System.out.println(response.body().asString());
+		}
+		
+		// NOTE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// String usernames = response.jsonPath().getString("username[0]");
+		
+		public static List<String> setupStringListFromResponseAndJsonSelector(Response response, String jsonSelector) {
+			int cntr = 0;
+	        tempString = response.jsonPath().getString(jsonSelector).replace("[","").replace("]", ""); // remove leading and trailing brackets.
+	        String[] usersNames =  tempString.split(",");  // put in string array
+	        for(String string :usersNames) { // trim spaces
+	        	usersNames[cntr++] = string.trim();
+	        }
+	        return Arrays.asList(usersNames);
+		}
+		
+		public static void ShowList(List<String> listIn) {
+			for(String str : listIn) {ShowText(str);}
+		}
 }
