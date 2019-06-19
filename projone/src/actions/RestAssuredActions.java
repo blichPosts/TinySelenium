@@ -264,11 +264,9 @@ public class RestAssuredActions extends BaseSelenium
 	        RestAssured.defaultParser = Parser.JSON;
 
 	        return
-	                 given()//.header("Content-Type", ContentType.JSON)
-	                	    //.header("Accept", ContentType.JSON)
-	                		.header("Authorization", "Bearer " + sisenseAccessToken)	                		
-	                		.when().get(endpoint).
-	                        then().contentType(ContentType.JSON).extract().response();
+	        		given()
+	                .header("Authorization", "Bearer " + sisenseAccessToken)	                		
+	                .when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
 	    }
 
 		// the URL below was found by going to deva, finding the API swagger for /authentication/login - Authenticate and receive token
@@ -306,8 +304,8 @@ public class RestAssuredActions extends BaseSelenium
 			// Response response = DoGetRequestSisense("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/users");
 			Response response = DoGetRequestSisense(mainEndpoint + "/users");
 			
-	        List<String> jsonResponse = response.jsonPath().getList("$");
 	        Assert.assertEquals(response.getStatusCode(), 200);
+			List<String> jsonResponse = response.jsonPath().getList("$");
 	        expectedListSize = jsonResponse.size();
 			
 	        List<String> listOfUserNames = setupStringListFromResponseAndJsonSelector(response, "userName");
@@ -329,6 +327,8 @@ public class RestAssuredActions extends BaseSelenium
 		public static void filterOnUser() { // zz
 			String userNameIn = "bob.lichtenfels@tangoe.com";
 
+			ShowText("Name to filter on: " + userNameIn);
+			
 			Response response = DoGetRequestSisense(mainEndpoint +  "/users?userName=" + userNameIn);
 			System.out.println(response.getStatusCode());
 			

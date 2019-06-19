@@ -28,7 +28,7 @@ public class RestTest {
 		//RestAssuredActions.MobprocAssetsDevices();
 		//RestAssuredActions.PostToken();
 		//RestAssuredActions.postTokenSisense();
-		//RestAssuredActions.getSisenseUsers();
+		RestAssuredActions.getSisenseUsers();
 		RestAssuredActions.filterOnUser();
 	}
 	
