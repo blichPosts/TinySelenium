@@ -304,13 +304,13 @@ public class RestAssuredActions extends BaseSelenium
 			// Response response = DoGetRequestSisense("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/users");
 			Response response = DoGetRequestSisense(mainEndpoint + "/users");
 			
-	        Assert.assertEquals(response.getStatusCode(), 200);
-			List<String> jsonResponse = response.jsonPath().getList("$");
+	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response 
+			List<String> jsonResponse = response.jsonPath().getList("$"); // get number of individual items (blocks) of data in response.
 	        expectedListSize = jsonResponse.size();
 			
-	        List<String> listOfUserNames = setupStringListFromResponseAndJsonSelector(response, "userName");
-	        Assert.assertTrue(listOfUserNames.size() == expectedListSize);
-	        List<String> listOfIds = setupStringListFromResponseAndJsonSelector(response, "_id");	        
+	        List<String> listOfUserNames = setupStringListFromResponseAndJsonSelector(response, "userName"); // make an API request for user names and receive a list of user names 
+	        Assert.assertTrue(listOfUserNames.size() == expectedListSize); // verify list size 
+	        List<String> listOfIds = setupStringListFromResponseAndJsonSelector(response, "_id"); // make an API request for user ids and receive a list of user ids	        
 	        Assert.assertTrue(listOfIds.size() == expectedListSize);
 
 	        
