@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_181"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.testng.TESTNG_CONTAINER"/>
 	<classpathentry kind="lib" path="lib_312/byte-buddy-1.8.3.jar"/>
@@ -35,5 +35,6 @@
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0-deps/tagsoup-1.2.1.jar"/>
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib_312/testng-6.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/bob.lichtenfels/gitTiny/projone/Libs/ojdbc6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

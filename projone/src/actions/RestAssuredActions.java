@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 
+import helpers.SisenseFolder;
 import helpers.SisenseUser;
 
 import static io.restassured.RestAssured.*;
@@ -42,11 +43,11 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	public static String sisenseAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiNWNkMmVhMmIxYzA5MmEyNGY4NjI0MmI5IiwiYXBpU2VjcmV0IjoiOTU5MGZjZTMtZGFjOC1iNjAxLTRhNDAtODZlYjczNTU3YTc1IiwiaWF0IjoxNTYwODY4MDkxfQ.RTXjDQkTIHa0NYLoIqcWcQ0eOrWys5SXP2HcbFzAGc8";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTYxNjY4MTAwfQ.tPKyPHcqHldSDnyvrJr7rZ3hKLfDxEzciNhyMxSJGhU";
 
 	public static String tempString = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
-	public static String mainEndpoint = "http://nadevgvbi01a.corp.tangoe.com:8081/api/v1";
+	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -324,6 +325,73 @@ public class RestAssuredActions extends BaseSelenium
 	        }
 		}
 
+		public static void getFolders() {
+	        int cntr = 0;
+	        int expectedListSize = 0;
+	        List<SisenseFolder> listOfTopFolders = new ArrayList<SisenseFolder>();
+	        List<SisenseFolder> listOfChildFolders = new ArrayList<SisenseFolder>();
+	        
+			Response response = DoGetRequestSisense(mainEndpoint + "/folders");
+			
+	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response 
+			List<String> jsonResponse = response.jsonPath().getList("$"); // get number of individual items (blocks) of data in response.
+	        expectedListSize = jsonResponse.size();
+	        System.out.println(expectedListSize);
+	        
+	        List<String> listOfNames = setupStringListFromResponseAndJsonSelector(response, "name"); // make an API request for user names and receive a list of user names
+	        List<String> listOfOids = setupStringListFromResponseAndJsonSelector(response, "oid"); // make an API request for user names and receive a list of user names
+	        List<String> listOfparentIds = setupStringListFromResponseAndJsonSelector(response, "parentId"); // make an API request for user names and receive a list of user names
+
+	        Assert.assertTrue(listOfNames.size() == expectedListSize);
+	        Assert.assertTrue(listOfOids.size() == expectedListSize);
+	        Assert.assertTrue(listOfparentIds.size() == expectedListSize);
+	        
+	        // store all folders except root folder
+	        for(int x = 0; x < expectedListSize; x++) {
+	        	if(!listOfNames.get(x).equals("rootFolder")) {
+	        		if(listOfparentIds.get(x).equals("null")) {
+	        			listOfTopFolders.add(new SisenseFolder(listOfparentIds.get(x), listOfOids.get(x), listOfNames.get(x)));
+	        		}
+	        		else {
+	        			listOfChildFolders.add(new SisenseFolder(listOfparentIds.get(x), listOfOids.get(x), listOfNames.get(x)));
+	        		}
+	        	}
+	        }
+	        	
+	        //ShowText("Top ------------------");
+	        //for(SisenseFolder folder : listOfTopFolders) {folder.Show();}
+	        //ShowText("Below ------------------");
+	        //for(SisenseFolder folder : listOfChildFolders) {folder.Show();}
+	        
+	        int level = 0;
+	        String oidCouldBeParent = "";
+	        String oidFolderName = "";
+	        
+	        for(SisenseFolder folder : listOfTopFolders) {
+	        	oidCouldBeParent = folder.m_oid; // set current oId to find child's for to the top folder
+	        	oidFolderName = folder.m_FolderName; // set current oId to find child's for to the top folder	        	
+	        	
+	        	// this goes through the child folders for the current top folder
+	        	for(SisenseFolder innerFolder : listOfChildFolders) {
+	        		innerFolder.doExternalQuery(level, folder);
+	        	}
+
+	        	
+	        	// now go through the child nodes. get the oId for each child node and see if any other child nodes inherit from it.  
+	        	for(SisenseFolder childFolder : listOfChildFolders) {
+	        		oidCouldBeParent = childFolder.m_oid;
+	        		oidFolderName = childFolder.m_FolderName;
+	        		level++;
+	        		for(SisenseFolder innerchildFolders : listOfChildFolders) {
+	        			// innerchildFolders.doExternalQuery(oidCouldBeParent, oidFolderName, level); // FIX !!!!!!
+		        	}
+	        	}
+	        }
+	        
+	        ShowText("Final ------------------");
+	        for(SisenseFolder folder : listOfChildFolders) {folder.Show();}
+		}
+		
 		public static void filterOnUser() { // zz
 			String userNameIn = "bob.lichtenfels@tangoe.com";
 
