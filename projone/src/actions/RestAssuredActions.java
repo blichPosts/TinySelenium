@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 
+import helpers.LevelInfo;
+import helpers.ParentChild;
 import helpers.SisenseFolder;
 import helpers.SisenseUser;
 
@@ -13,6 +15,7 @@ import static io.restassured.RestAssured.*;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
+import io.restassured.internal.multipart.RestAssuredMultiPartEntity;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 //import io.restassured.matcher.RestAssuredMatchers.*;
@@ -270,6 +273,23 @@ public class RestAssuredActions extends BaseSelenium
 	                .when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
 	    }
 
+	    public static Response DoGetRequestSisenseBoolean(String endpoint)  // MOBPROC
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        Response resp = null;
+	        
+	        try {
+		        resp = given().header("Authorization", "Bearer " + sisenseAccessToken).when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
+	        }
+	        catch (AssertionError re){
+	        	ShowText("Bomb ---------------------------------------- ");
+	        	return null;
+	        }
+	        return resp;
+	    }
+	    
+	    
 		// the URL below was found by going to deva, finding the API swagger for /authentication/login - Authenticate and receive token
 		// look under "authentication" in sisense swagger page
 		public static void postTokenSisense() {
@@ -325,6 +345,286 @@ public class RestAssuredActions extends BaseSelenium
 	        }
 		}
 
+		public static void getFoldersTwo() {
+
+			// http://nadevgvbi01b.corp.tangoe.com:8081/api/v1/folders/5d1532a50df2540edcce380e/subtree?structure=tree
+	        int expectedListSize = 0;
+	        List<SisenseFolder> listOfTopFolders = new ArrayList<SisenseFolder>();
+	        //List<SisenseFolder> listOfChildFolders = new ArrayList<SisenseFolder>();
+	        
+			Response responseFolders = DoGetRequestSisense(mainEndpoint + "/folders");
+			
+	        Assert.assertEquals(responseFolders.getStatusCode(), 200); // verify 200 response 
+			List<String> jsonResponse = responseFolders.jsonPath().getList("$"); // get number of individual items (blocks) of data in response.
+	        expectedListSize = jsonResponse.size();
+	        
+	        List<String> listOfNames = setupStringListFromResponseAndJsonSelector(responseFolders, "name");
+	        List<String> listOfOids = setupStringListFromResponseAndJsonSelector(responseFolders, "oid");
+	        List<String> listOfparentIds = setupStringListFromResponseAndJsonSelector(responseFolders, "parentId"); 
+
+	        Assert.assertTrue(listOfNames.size() == expectedListSize);
+	        Assert.assertTrue(listOfOids.size() == expectedListSize);
+	        Assert.assertTrue(listOfparentIds.size() == expectedListSize);
+
+	        // store all folders except root folder
+	        for(int x = 0; x < expectedListSize; x++) {
+	        	if(!listOfNames.get(x).equals("rootFolder")) {
+	        		if(listOfparentIds.get(x).equals("null")) {
+	        			// listOfTopFolders.add(new SisenseFolder(listOfparentIds.get(x), listOfOids.get(x), listOfNames.get(x))); // out
+	        		}
+	        	}
+	        }
+
+	        
+	        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	        // 											START
+	        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	        int level = 1;
+	        Response responseAncestors;
+	        Response subTree;;
+	        String parentFolder = ""; 
+
+	        List<String> tempListOfFolderOids = new ArrayList<String>();
+	        List<String> tempListOfFolderNames = new ArrayList<String>();	        
+	        List<SisenseFolder> sisnseFoldersTreeStructureInOrder = new ArrayList<SisenseFolder>();
+	        
+	        // call into top of folders, get folder tree info for all folders, and put info into 'responseFolders' response
+	        responseFolders = DoGetRequestSisense(mainEndpoint + "/folders" + "?structure=tree");  
+	        ShowText("-----------");
+	        // get all oids and names into list for current level in 'responseFolders'
+        	//System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.oid"));
+        	//System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.name"));
+			//Response responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d163415758ceb268485f8f0" + "/ancestors?structure=tree");
+        	//System.out.println("5d1532a50df2540edcce380e " + setupStringListFromResponseAndJsonSelector(responseAncestors, "name"));
+        	
+        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.oid");
+        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.name");
+        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+
+        	// NOTE !! responseAncestors needs name change
+        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
+        		ShowText("Folder Name = " + tempListOfFolderNames.get(x));
+        		ShowText("Oid = " + tempListOfFolderOids.get(x));        		
+        		responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor 
+        		System.out.println(setupStringListFromResponseAndJsonSelector(responseAncestors, "name")); // show ancestor
+        		//responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/subtree?structure=tree"); // get child
+        		//System.out.println(setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.name")); // show child 
+        	}
+
+
+        	ShowText("-----------");
+        	/*
+        	System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.oid"));
+        	System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.name"));
+			responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d163415758ceb268485f8f0" + "/ancestors?structure=tree");
+        	System.out.println("5d163415758ceb268485f8f0 " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.name"));
+			responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d1654fa758ceb268485f8f4" + "/ancestors?structure=tree");
+        	System.out.println("5d1654fa758ceb268485f8f4 " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.name"));
+        	*/ 
+        	
+
+        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.oid");
+        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.name");
+        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+
+        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
+        		ShowText("Folder Name = " + tempListOfFolderNames.get(x));
+        		ShowText("Oid = " + tempListOfFolderOids.get(x));
+        		responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor
+        		System.out.println("Ancestror " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.name")); // show ancestor
+            	//responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/subtree?structure=tree"); // get child        			
+            	//System.out.println(responseAncestors);
+            	//responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/subtree?structure=flat"); // get child        			
+            	//System.out.println(responseAncestors);
+            	
+        		//System.out.println(responseAncestors);
+        	}
+        	
+	        ShowText("-----------");
+	        /*
+	        System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.folders.oid"));
+        	System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.folders.name"));
+			responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d17a23d758ceb268485f8f6" + "/ancestors?structure=tree");
+        	System.out.println("5d17a23d758ceb268485f8f6 " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.folders.name"));
+			responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d16408a758ceb268485f8f2" + "/ancestors?structure=tree");
+        	System.out.println("5d16408a758ceb268485f8f2 " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.folders.name"));
+			responseAncestors = DoGetRequestSisense(mainEndpoint + "/folders/" + "5d18cfda758ceb268485f8f8" + "/ancestors?structure=tree");
+        	System.out.println("5d18cfda758ceb268485f8f8 " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.folders.name"));
+        	*/
+        	
+        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.folders.oid");
+        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.folders.name");
+        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+
+        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
+        		ShowText("Folder Name = " + tempListOfFolderNames.get(x));
+        		ShowText("Oid = " + tempListOfFolderOids.get(x));
+        		responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor
+        		System.out.println("Ancestror " + setupStringListFromResponseAndJsonSelector(responseAncestors, "folders.folders.name")); // show ancestor
+            	//responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/subtree?structure=tree"); // get child        			
+            	//System.out.println(responseAncestors);
+            	//responseAncestors = DoGetRequestSisenseBoolean(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/subtree?structure=flat"); // get child        			
+            	//System.out.println(responseAncestors);
+            	
+        		//System.out.println(responseAncestors);
+        	}
+        	
+        	
+	        ShowText("-----------");
+        	System.out.println(setupStringListFromResponseAndJsonSelector(responseFolders, "folders.folders.folders.folders.oid"));
+		}
+		
+		public static void getFoldersThree() { 
+			int cntr = 0;
+			int folderCounter = 0;
+			String oidPath = "folders.oid";
+			String namePath = "folders.name";
+			String ancestorPath = "name";
+	        Response tempResponse;
+
+	        
+	        List<String> tempListOfFolderOids = new ArrayList<String>();
+	        List<String> tempListOfFolderNames = new ArrayList<String>();	        
+
+	        // Main call to get all folders.
+	        Response responseFolders = DoGetRequestSisense(mainEndpoint + "/folders" + "?structure=tree"); // get all sisense folders into tree structure
+			
+			do {
+				//ShowText("Oid path=" + oidPath + " Folder name Path=" + namePath + " Ancestor Path=" + ancestorPath); // this shows changing variables on each loop
+	        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, oidPath);
+	        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, namePath);
+	        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+			
+	        	ShowText("--------------------- Level = " + cntr);
+	        	System.out.println("Folder list back " + tempListOfFolderNames);
+	        	
+	        	if(isAllSpaces(tempListOfFolderNames.toString().replace("[", "" ).replace("]", "").replace(",",""))) {
+	        		break;
+	        	}
+	        		
+	        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
+	        		if(tempListOfFolderNames.get(x).length() == 0) {      
+	        			continue;
+	        		}
+	        		ShowText("Folder Name = " + tempListOfFolderNames.get(x));
+	        		folderCounter ++;
+	        		
+	        		tempResponse = DoGetRequestSisense(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor folders for this oid
+	        		System.out.println("Parent " + setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath)); // show ancestor folder
+	        	}
+	        	
+				// update to go one level below the last level queried
+				oidPath = "folders." + oidPath;
+				namePath = "folders." + namePath;
+				ancestorPath = "folders." + ancestorPath;
+				
+				System.out.println("Counter finished = " + cntr);
+				cntr++;
+			}  while (cntr < 17);
+			
+			System.out.println("Total folder count = " +  folderCounter);
+		}
+		
+
+		public static void getFoldersFourBuildList() { 
+			int cntr = 0;
+			int folderCounter = 0;
+			String oidPath = "folders.oid";
+			String namePath = "folders.name";
+			String ancestorPath = "name";
+			String tempParentFolder = "";
+	        Response tempResponse;
+
+	        List<LevelInfo> levelInfoList = new ArrayList<LevelInfo>();
+	        List<String> tempListOfFolderOids = new ArrayList<String>();
+	        List<String> tempListOfFolderNames = new ArrayList<String>();	        
+
+	        // Main call to get all folders.
+	        Response responseFolders = DoGetRequestSisense(mainEndpoint + "/folders" + "?structure=tree"); // get all sisense folders into tree structure
+			
+			do {
+				//ShowText("Oid path=" + oidPath + " Folder name Path=" + namePath + " Ancestor Path=" + ancestorPath); // this shows changing variables on each loop
+	        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, oidPath);
+	        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, namePath);
+	        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+			
+	        	ShowText("--------------------- Level = " + cntr);
+	        	System.out.println("Folder list back " + tempListOfFolderNames);
+	        	
+	        	if(isAllSpaces(tempListOfFolderNames.toString().replace("[", "" ).replace("]", "").replace(",",""))) {
+	        		break;
+	        	}
+
+        		levelInfoList.add(new LevelInfo(cntr));
+	        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
+	        		if(tempListOfFolderNames.get(x).length() == 0) {      
+	        			continue;
+	        		}
+	        		ShowText("Folder Oid = " + tempListOfFolderOids.get(x));
+	        		ShowText("Folder Name = " + tempListOfFolderNames.get(x));
+
+	        		folderCounter ++;
+	        		
+	        		tempResponse = DoGetRequestSisense(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor folders for this oid
+	        		System.out.println("Parent " + setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath)); // show ancestor folder
+	        		tempString =  setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath).get(0);
+	        		levelInfoList.get(cntr).AddParentChild(tempString, tempListOfFolderNames.get(x), tempListOfFolderOids.get(x));
+	        	}
+	        	
+				// update to go one level below the last level queried
+				oidPath = "folders." + oidPath;
+				namePath = "folders." + namePath;
+				ancestorPath = "folders." + ancestorPath;
+				
+				System.out.println("Counter finished = " + cntr);
+				cntr++;
+			}  while (cntr < 17);
+			
+			System.out.println("Total folder count = " +  folderCounter);
+			System.out.println("Level info list size  = " + levelInfoList.size());
+			for(LevelInfo lInfo : levelInfoList) {
+				lInfo.Show();
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		public static boolean isAllSpaces(String strIn) {
+			
+			for(int x = 0; x < strIn.length(); x++) {
+				if(!(strIn.charAt(x) == ' ')) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
 		public static void getFolders() {
 	        int cntr = 0;
 	        int expectedListSize = 0;
@@ -345,7 +645,7 @@ public class RestAssuredActions extends BaseSelenium
 	        Assert.assertTrue(listOfNames.size() == expectedListSize);
 	        Assert.assertTrue(listOfOids.size() == expectedListSize);
 	        Assert.assertTrue(listOfparentIds.size() == expectedListSize);
-	        
+	        /*
 	        // store all folders except root folder
 	        for(int x = 0; x < expectedListSize; x++) {
 	        	if(!listOfNames.get(x).equals("rootFolder")) {
@@ -357,39 +657,29 @@ public class RestAssuredActions extends BaseSelenium
 	        		}
 	        	}
 	        }
-	        	
-	        //ShowText("Top ------------------");
-	        //for(SisenseFolder folder : listOfTopFolders) {folder.Show();}
-	        //ShowText("Below ------------------");
-	        //for(SisenseFolder folder : listOfChildFolders) {folder.Show();}
-	        
-	        int level = 0;
-	        String oidCouldBeParent = "";
-	        String oidFolderName = "";
-	        
+	        	*/
+	        //ShowText("Parent folders *** "); for(SisenseFolder folder : listOfTopFolders) {folder.Show();}
+	        //ShowText("Child folders below parents *** "); for(SisenseFolder folder : listOfChildFolders) {folder.Show();}
+	        /*
 	        for(SisenseFolder folder : listOfTopFolders) {
-	        	oidCouldBeParent = folder.m_oid; // set current oId to find child's for to the top folder
-	        	oidFolderName = folder.m_FolderName; // set current oId to find child's for to the top folder	        	
 	        	
 	        	// this goes through the child folders for the current top folder
 	        	for(SisenseFolder innerFolder : listOfChildFolders) {
-	        		innerFolder.doExternalQuery(level, folder);
+	        		innerFolder.doExternalQuery(folder);
 	        	}
 
 	        	
-	        	// now go through the child nodes. get the oId for each child node and see if any other child nodes inherit from it.  
+	        	// for each   
 	        	for(SisenseFolder childFolder : listOfChildFolders) {
-	        		oidCouldBeParent = childFolder.m_oid;
-	        		oidFolderName = childFolder.m_FolderName;
-	        		level++;
-	        		for(SisenseFolder innerchildFolders : listOfChildFolders) {
-	        			// innerchildFolders.doExternalQuery(oidCouldBeParent, oidFolderName, level); // FIX !!!!!!
-		        	}
+	        		for(SisenseFolder childFolderInner : listOfChildFolders) {
+		        		childFolderInner.doExternalQuery(childFolder);
+	        		}
 	        	}
 	        }
 	        
-	        ShowText("Final ------------------");
-	        for(SisenseFolder folder : listOfChildFolders) {folder.Show();}
+	        for(SisenseFolder folder : listOfTopFolders) {folder.Show();} // show all
+	        for(SisenseFolder folder : listOfChildFolders) {folder.Show();} // show all
+	        */
 		}
 		
 		public static void filterOnUser() { // zz
@@ -407,8 +697,24 @@ public class RestAssuredActions extends BaseSelenium
 		// String usernames = response.jsonPath().getString("username[0]");
 		
 		public static List<String> setupStringListFromResponseAndJsonSelector(Response response, String jsonSelector) {
+			//ShowText(jsonSelector);
 			int cntr = 0;
 	        tempString = response.jsonPath().getString(jsonSelector).replace("[","").replace("]", ""); // remove leading and trailing brackets.
+	        String[] usersNames =  tempString.split(",");  // put in string array
+	        for(String string :usersNames) { // trim spaces
+	        	usersNames[cntr++] = string.trim();
+	        }
+	        return Arrays.asList(usersNames);
+		}
+		
+		public static List<String> setupStringListFromResponseAndJsonSelectorWithFailCondition(Response response, String jsonSelector) {
+			ShowText(jsonSelector);
+			int cntr = 0;
+			try {
+				tempString = response.jsonPath().getString(jsonSelector).replace("[","").replace("]", ""); // remove leading and trailing brackets.				
+			}catch(Exception e) {
+				return null;
+			}
 	        String[] usersNames =  tempString.split(",");  // put in string array
 	        for(String string :usersNames) { // trim spaces
 	        	usersNames[cntr++] = string.trim();

@@ -4,37 +4,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SisenseFolder {
-	public String m_parentId = null;
-	public String m_oid = "";
-	public int m_level = -1; 
 	public String m_FolderName = "";
-	public String m_ParentName = "";
-	List<String> listOfChildFolders;
+	public String m_oid = "";
+	public String m_ParentFolder = "";
+	public int m_level = -1; 
 	
-	public void update(String parentIdSearch ) {
-		
-	}
-	
-	public SisenseFolder(String parentId, String oid, String name) {
-		m_parentId = parentId;
+	public SisenseFolder(String folderName, String oid, String parentFolder, int level) {
+		m_FolderName = folderName;
 		m_oid = oid;
-		m_FolderName = name;
-		listOfChildFolders = new ArrayList<String>();
+		m_ParentFolder = parentFolder;
+		m_level = level;
 	}
 	
-	// 
-	public void doExternalQuery(int level, SisenseFolder siFolderIn) {
-		if(siFolderIn.m_oid.equals(m_parentId)) {
-			siFolderIn.listOfChildFolders.add(m_FolderName);
-		}
-	}
 	
+	/*
 	public void Show() {
 		System.out.println("-------------------------");
-		System.out.println("ParentId:" + m_parentId);
-		System.out.println("ParentName:" + m_ParentName);
 		System.out.println("Folder Name:" + m_FolderName);
+		System.out.println("ParentName:" + m_ParentName);
+		if(listOfChildFolders.size() == 0) {
+			System.out.println("No child folders");
+		}
+		else {
+			System.out.println("Child folders");
+			for(String str : listOfChildFolders) {System.out.println(str);}			
+		}
+		System.out.println("ParentId:" + m_parentId);
 		System.out.println("Oid:" + m_oid);
-		System.out.println("Level:" + m_level);
 	}
+	*/
 }

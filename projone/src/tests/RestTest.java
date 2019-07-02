@@ -30,7 +30,9 @@ public class RestTest {
 		//RestAssuredActions.postTokenSisense();
 		//RestAssuredActions.getSisenseUsers();
 		//RestAssuredActions.filterOnUser();
-		RestAssuredActions.getFolders();
+		//RestAssuredActions.getFoldersTwo();
+		RestAssuredActions.getFoldersThree();
+		//RestAssuredActions.getFoldersFourBuildList();
 	}
 	
 	
