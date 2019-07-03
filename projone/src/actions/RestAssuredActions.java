@@ -46,11 +46,12 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTYxNjY4MTAwfQ.tPKyPHcqHldSDnyvrJr7rZ3hKLfDxEzciNhyMxSJGhU";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
 
 	public static String tempString = "";
+	public static String tempParentFolder = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
-	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1";
+	public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1";
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -319,6 +320,34 @@ public class RestAssuredActions extends BaseSelenium
 			ShowText(jsonPathEvaluator.get("access_token").toString());
 		}
 		
+		public static void postTokenSisenseForSpecifiedUser(String specifiedUser) {
+			//RestAssured.baseURI ="http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login";
+			//RestAssured.baseURI = "http://dc1devapp08.prod.tangoe.com:8081/api/v1/authentication/login"; // sil's mail 
+			
+		    String payload = "{\n" +
+		            "  \"username\": \"" + specifiedUser + "\",\n" +
+		            "  \"password\": \"Tangoe1!\"\n" +
+		            "}";			
+		    
+		    ShowText(payload);
+		    Response response = 
+		            given().urlEncodingEnabled(true)
+		            .contentType(ContentType.JSON)
+		            .body(payload)
+		            //.post("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login")
+		            .post(mainEndpoint + "/authentication/login")
+		            .then()
+		            //.statusCode(200)
+		            .extract()
+		            .response();
+		    
+			System.out.println(response.getStatusCode());
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get());
+			ShowText(jsonPathEvaluator.get("access_token").toString());
+		}
+		
+		
 		public static void getSisenseUsers() {
 	        int cntr = 0;
 	        int expectedListSize = 0;
@@ -526,8 +555,8 @@ public class RestAssuredActions extends BaseSelenium
 		}
 		
 
-		public static void getFoldersFourBuildList() { 
-			int cntr = 0;
+		public static void getFoldersFourBuildList() {  // zz
+			int levelCntr = 0;
 			int folderCounter = 0;
 			String oidPath = "folders.oid";
 			String namePath = "folders.name";
@@ -546,16 +575,19 @@ public class RestAssuredActions extends BaseSelenium
 				//ShowText("Oid path=" + oidPath + " Folder name Path=" + namePath + " Ancestor Path=" + ancestorPath); // this shows changing variables on each loop
 	        	tempListOfFolderOids = setupStringListFromResponseAndJsonSelector(responseFolders, oidPath);
 	        	tempListOfFolderNames = setupStringListFromResponseAndJsonSelector(responseFolders, namePath);
-	        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size());
+	        	Assert.assertTrue(tempListOfFolderNames.size() == tempListOfFolderOids.size()); // sanity check
 			
-	        	ShowText("--------------------- Level = " + cntr);
+	        	ShowText("--------------------- Level = " + levelCntr);
 	        	System.out.println("Folder list back " + tempListOfFolderNames);
 	        	
 	        	if(isAllSpaces(tempListOfFolderNames.toString().replace("[", "" ).replace("]", "").replace(",",""))) {
 	        		break;
 	        	}
 
-        		levelInfoList.add(new LevelInfo(cntr));
+	        	// create LevelInfo class for this level and add to list of LevelInfo. Pass in the index and folder names at this level. 
+	        	levelInfoList.add(new LevelInfo(levelCntr, tempListOfFolderNames));
+	        	
+	        	// go through the list of folders and list of corresponding ods.  
 	        	for(int x = 0; x < tempListOfFolderNames.size(); x++) {
 	        		if(tempListOfFolderNames.get(x).length() == 0) {      
 	        			continue;
@@ -565,10 +597,13 @@ public class RestAssuredActions extends BaseSelenium
 
 	        		folderCounter ++;
 	        		
-	        		tempResponse = DoGetRequestSisense(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); // get ancestor folders for this oid
+	        		// get ancestor folders for this oid and then take out the immediate parent folder to this oid.
+	        		tempResponse = DoGetRequestSisense(mainEndpoint + "/folders/" + tempListOfFolderOids.get(x) + "/ancestors?structure=tree"); 
 	        		System.out.println("Parent " + setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath)); // show ancestor folder
-	        		tempString =  setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath).get(0);
-	        		levelInfoList.get(cntr).AddParentChild(tempString, tempListOfFolderNames.get(x), tempListOfFolderOids.get(x));
+	        		tempParentFolder =  setupStringListFromResponseAndJsonSelector(tempResponse, ancestorPath).get(0);  
+	        		
+	        		// add current parent folder, immediate child folder, and child oid to current level object
+	        		levelInfoList.get(levelCntr).AddParentChild(tempParentFolder, tempListOfFolderNames.get(x), tempListOfFolderOids.get(x)); 
 	        	}
 	        	
 				// update to go one level below the last level queried
@@ -576,15 +611,36 @@ public class RestAssuredActions extends BaseSelenium
 				namePath = "folders." + namePath;
 				ancestorPath = "folders." + ancestorPath;
 				
-				System.out.println("Counter finished = " + cntr);
-				cntr++;
-			}  while (cntr < 17);
+				System.out.println("Level counter finished = " + levelCntr);
+				levelCntr++;
+			}  while (levelCntr < 17);
 			
 			System.out.println("Total folder count = " +  folderCounter);
 			System.out.println("Level info list size  = " + levelInfoList.size());
+			System.out.println("\n **************************************************** ");
 			for(LevelInfo lInfo : levelInfoList) {
 				lInfo.Show();
 			}
+			
+			System.out.println("------------------ COMPLETE --------------------------------");
+			
+
+			for(int x = 0; x < levelInfoList.size(); x++) {
+				if((x+1) == levelInfoList.size()){
+					break;
+				}
+				
+				List<String> tempList =levelInfoList.get(x).getAllFoldersAtThisLevel();
+				
+				for(String str : tempList) {
+					System.out.println("Folder = " + str);
+					System.out.println(levelInfoList.get(x+1).getChildrenforParent(str));
+				}
+			}
+			
+			
+
+			
 		}
 		
 		
