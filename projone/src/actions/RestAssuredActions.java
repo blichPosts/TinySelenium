@@ -5,6 +5,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 
+import com.sun.tools.xjc.model.CBuiltinLeafInfo;
+
+import helpers.Dashboard;
 import helpers.LevelInfo;
 import helpers.ParentChild;
 import helpers.SisenseFolder;
@@ -22,6 +25,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import tests.BaseSelenium;
+import tests.DashBoardSideSelections;
 
 import static org.hamcrest.Matchers.*;
 
@@ -46,12 +50,18 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
-
+	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
+	
+	
 	public static String tempString = "";
 	public static String tempParentFolder = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
 	public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1";
+
+	public static List<String> listOfDahBoardNames = new ArrayList<>();
+	public static List<String> listOfDahBoardOids = new ArrayList<>();
+	public static List<Dashboard> listOfDashBoards = new ArrayList<>();	
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -347,6 +357,43 @@ public class RestAssuredActions extends BaseSelenium
 			ShowText(jsonPathEvaluator.get("access_token").toString());
 		}
 		
+		public static void getSpecificUserDashboardData() { // zz
+			Response response = DoGetRequestSisense(mainEndpoint + "/dashboards"); // get all dash boards for user token
+	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response
+	        
+	        // store the dash board names an dash board oids into lists  
+	        listOfDahBoardNames = setupStringListFromResponseAndJsonSelector(response, "title");
+	        listOfDahBoardOids = setupStringListFromResponseAndJsonSelector(response, "oid");
+	        
+	        //System.out.println(listOfDahBoardNames);
+	        //System.out.println(listOfDahBoardOids);	        
+	        
+	        int localCntr = 0; // get the list items into dash board objects.
+	        for(String str : listOfDahBoardNames) {
+	        	if(!str.equals("null")) {
+	        		//ShowText(str);ShowText(listOfDahBoardOids.get(localCntr));
+		        	listOfDashBoards.add(new Dashboard(str, listOfDahBoardOids.get(localCntr++)));
+	        	}
+	        	else {
+	        		localCntr++;
+	        	}
+	        }
+	        
+	        localCntr = 0; // go through dash board list and get titles that go with each dashboard
+	        for(Dashboard dBoard : listOfDashBoards) {
+	        	// http://naqagvbi01b.corp.tangoe.com:8081/api/v1/dashboards/5d1cc5d1add6a82e043318a2/widgets?fields=title
+	        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
+	        	//System.out.println(setupStringListFromResponseAndJsonSelector(response, "title"));
+	        	//System.out.println(DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title")); //
+	        	
+	        }
+	        
+	        
+	        
+	        
+	        
+	        
+		}
 		
 		public static void getSisenseUsers() {
 	        int cntr = 0;
@@ -555,7 +602,7 @@ public class RestAssuredActions extends BaseSelenium
 		}
 		
 
-		public static void getFoldersFourBuildList() {  // zz
+		public static void getFoldersFourBuildList() {  
 			int levelCntr = 0;
 			int folderCounter = 0;
 			String oidPath = "folders.oid";
@@ -738,7 +785,7 @@ public class RestAssuredActions extends BaseSelenium
 	        */
 		}
 		
-		public static void filterOnUser() { // zz
+		public static void filterOnUser() { 
 			String userNameIn = "bob.lichtenfels@tangoe.com";
 
 			ShowText("Name to filter on: " + userNameIn);

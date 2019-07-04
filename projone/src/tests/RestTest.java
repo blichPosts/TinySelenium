@@ -33,8 +33,8 @@ public class RestTest {
 		//RestAssuredActions.getFoldersTwo();
 		//RestAssuredActions.getFoldersThree();
 		//RestAssuredActions.getFoldersFourBuildList();
-		RestAssuredActions.postTokenSisenseForSpecifiedUser("ken.freeman@tangoe.com");
-		
+		//RestAssuredActions.postTokenSisenseForSpecifiedUser("ken.freeman@tangoe.com");
+		RestAssuredActions.getSpecificUserDashboardData();
 		
 		
 	}
