@@ -2,14 +2,10 @@ package actions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.testng.Assert;
-
-import com.sun.tools.xjc.model.CBuiltinLeafInfo;
 
 import helpers.Dashboard;
 import helpers.LevelInfo;
-import helpers.ParentChild;
 import helpers.SisenseFolder;
 import helpers.SisenseUser;
 
@@ -17,18 +13,11 @@ import static io.restassured.RestAssured.*;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.internal.multipart.RestAssuredMultiPartEntity;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 //import io.restassured.matcher.RestAssuredMatchers.*;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import tests.BaseSelenium;
-import tests.DashBoardSideSelections;
-
-import static org.hamcrest.Matchers.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,8 +39,8 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
-	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
+	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
 	
 	
 	public static String tempString = "";
@@ -346,7 +335,7 @@ public class RestAssuredActions extends BaseSelenium
 		    
 			System.out.println(response.getStatusCode());
 			JsonPath jsonPathEvaluator = response.jsonPath();
-			System.out.println(jsonPathEvaluator.get());
+			System.out.println("zzzzz " + jsonPathEvaluator.get());
 			ShowText(jsonPathEvaluator.get("access_token").toString());
 		}
 		
