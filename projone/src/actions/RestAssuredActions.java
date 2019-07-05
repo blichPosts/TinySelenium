@@ -50,8 +50,8 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
+	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
 	
 	
 	public static String tempString = "";
@@ -59,8 +59,8 @@ public class RestAssuredActions extends BaseSelenium
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
 	public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1";
 
-	public static List<String> listOfDahBoardNames = new ArrayList<>();
-	public static List<String> listOfDahBoardOids = new ArrayList<>();
+	public static List<String> listOfDashBoardNames = new ArrayList<>();
+	public static List<String> listOfDashBoardOids = new ArrayList<>();
 	public static List<Dashboard> listOfDashBoards = new ArrayList<>();	
 	
 	public static void SanityCheck() throws JSONException {
@@ -289,14 +289,7 @@ public class RestAssuredActions extends BaseSelenium
 	        RestAssured.defaultParser = Parser.JSON;
 
 	        Response resp = null;
-	        
-	        try {
-		        resp = given().header("Authorization", "Bearer " + sisenseAccessToken).when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
-	        }
-	        catch (AssertionError re){
-	        	ShowText("Bomb ---------------------------------------- ");
-	        	return null;
-	        }
+	        resp = given().header("Authorization", "Bearer " + sisenseAccessToken).when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
 	        return resp;
 	    }
 	    
@@ -358,41 +351,41 @@ public class RestAssuredActions extends BaseSelenium
 		}
 		
 		public static void getSpecificUserDashboardData() { // zz
+			List<String> tempList;
 			Response response = DoGetRequestSisense(mainEndpoint + "/dashboards"); // get all dash boards for user token
 	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response
 	        
-	        // store the dash board names an dash board oids into lists  
-	        listOfDahBoardNames = setupStringListFromResponseAndJsonSelector(response, "title");
-	        listOfDahBoardOids = setupStringListFromResponseAndJsonSelector(response, "oid");
-	        
-	        //System.out.println(listOfDahBoardNames);
-	        //System.out.println(listOfDahBoardOids);	        
+	        // store the dash board names and dash board oids into lists  
+	        listOfDashBoardNames = setupStringListFromResponseAndJsonSelector(response, "title");
+	        listOfDashBoardOids = setupStringListFromResponseAndJsonSelector(response, "oid");
 	        
 	        int localCntr = 0; // get the list items into dash board objects.
-	        for(String str : listOfDahBoardNames) {
+	        for(String str : listOfDashBoardNames) {
 	        	if(!str.equals("null")) {
 	        		//ShowText(str);ShowText(listOfDahBoardOids.get(localCntr));
-		        	listOfDashBoards.add(new Dashboard(str, listOfDahBoardOids.get(localCntr++)));
+		        	listOfDashBoards.add(new Dashboard(str, listOfDashBoardOids.get(localCntr++)));
 	        	}
 	        	else {
 	        		localCntr++;
 	        	}
 	        }
 	        
-	        localCntr = 0; // go through dash board list and get titles that go with each dashboard
+	        localCntr = 0; // go through dash board list and get titles that go with each dash board
 	        for(Dashboard dBoard : listOfDashBoards) {
-	        	// http://naqagvbi01b.corp.tangoe.com:8081/api/v1/dashboards/5d1cc5d1add6a82e043318a2/widgets?fields=title
 	        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
 	        	//System.out.println(setupStringListFromResponseAndJsonSelector(response, "title"));
-	        	//System.out.println(DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title")); //
-	        	
+	        	tempList = setupStringListFromResponseAndJsonSelector(response, "title");
+	        	if(tempList.size() > 1) {
+		        	for(String str : tempList) {
+		        		dBoard.addTitle(str);
+		        	}
+	        	}
+
 	        }
-	        
-	        
-	        
-	        
-	        
-	        
+
+	        for(Dashboard dBoard : listOfDashBoards) {
+	        	dBoard.Show();
+	        }
 		}
 		
 		public static void getSisenseUsers() {
@@ -807,7 +800,7 @@ public class RestAssuredActions extends BaseSelenium
 	        for(String string :usersNames) { // trim spaces
 	        	usersNames[cntr++] = string.trim();
 	        }
-	        return Arrays.asList(usersNames);
+	        return Arrays.asList(usersNames); // return as list
 		}
 		
 		public static List<String> setupStringListFromResponseAndJsonSelectorWithFailCondition(Response response, String jsonSelector) {

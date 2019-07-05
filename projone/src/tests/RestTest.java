@@ -27,7 +27,7 @@ public class RestTest {
 		//RestAssuredActions.MobprocTwo(); // this has list for headers.
 		//RestAssuredActions.MobprocAssetsDevices();
 		//RestAssuredActions.PostToken();
-		//RestAssuredActions.postTokenSisense();
+		//RestAssuredActions.postTokenSisense(); // admin user
 		//RestAssuredActions.getSisenseUsers();
 		//RestAssuredActions.filterOnUser();
 		//RestAssuredActions.getFoldersTwo();

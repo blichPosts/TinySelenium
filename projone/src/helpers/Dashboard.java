@@ -20,8 +20,18 @@ public class Dashboard {
 	}
 	
 	public void Show() {
-		
+		System.out.println("----------------------------");
+		System.out.println("Dash name " + m_Name);
+		System.out.print("Dash titles:");
+		if(titleList.size() == 0) {
+			System.out.println("Dash has no titles.");
+		}
+		else {
+			for(String str : titleList) {
+				System.out.print(str);
+				System.out.print(", ");
+			}
+			System.out.println("");
+		}
 	}
-	
-	
 }
