@@ -40,13 +40,13 @@ public class RestAssuredActions extends BaseSelenium
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
 	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYyZjE4YTAyMGExM2NjMWE0MzMyIiwiYXBpU2VjcmV0IjoiN2QwYmU3MGItODI1NC03M2FjLTZlNGUtNGFjYzQ4MDRmOWMxIiwiaWF0IjoxNTYyMjQxMTA5fQ.3Vw0UOez3aAN5_EGfmOrjN7-dmAWyBgmH7BPBCTIloA";
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTYyNTMxNTc3fQ.W3tv2zcU89_O41VnwlaOeWEC-ykncVPSR6kT3ICr8UE";
 	
 	
 	public static String tempString = "";
 	public static String tempParentFolder = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
-	public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1";
+	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1";
 
 	public static List<String> listOfDashBoardNames = new ArrayList<>();
 	public static List<String> listOfDashBoardOids = new ArrayList<>();
@@ -362,14 +362,12 @@ public class RestAssuredActions extends BaseSelenium
 	        localCntr = 0; // go through dash board list and get titles that go with each dash board
 	        for(Dashboard dBoard : listOfDashBoards) {
 	        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
-	        	//System.out.println(setupStringListFromResponseAndJsonSelector(response, "title"));
 	        	tempList = setupStringListFromResponseAndJsonSelector(response, "title");
-	        	if(tempList.size() > 1) {
+	        	if(tempList != null) {
 		        	for(String str : tempList) {
 		        		dBoard.addTitle(str);
 		        	}
 	        	}
-
 	        }
 
 	        for(Dashboard dBoard : listOfDashBoards) {
@@ -784,7 +782,10 @@ public class RestAssuredActions extends BaseSelenium
 		public static List<String> setupStringListFromResponseAndJsonSelector(Response response, String jsonSelector) {
 			//ShowText(jsonSelector);
 			int cntr = 0;
-	        tempString = response.jsonPath().getString(jsonSelector).replace("[","").replace("]", ""); // remove leading and trailing brackets.
+			if(response.jsonPath().getString(jsonSelector).equals("[]")){ // query found nothing
+				return null;
+			}
+			tempString = response.jsonPath().getString(jsonSelector).replace("[","").replace("]", ""); // remove leading and trailing brackets.
 	        String[] usersNames =  tempString.split(",");  // put in string array
 	        for(String string :usersNames) { // trim spaces
 	        	usersNames[cntr++] = string.trim();
