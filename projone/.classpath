@@ -36,5 +36,24 @@
 	<classpathentry kind="lib" path="Libs/rest-assured-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib_312/testng-6.11.jar"/>
 	<classpathentry kind="lib" path="C:/Users/bob.lichtenfels/gitTiny/projone/Libs/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="Libs/poi-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/poi-examples-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/poi-excelant-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/poi-ooxml-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/poi-ooxml-schemas-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/poi-scratchpad-4.1.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="LibExcel/commons-codec-1.12.jar"/>
+	<classpathentry kind="lib" path="LibExcel/commons-collections4-4.3.jar"/>
+	<classpathentry kind="lib" path="LibExcel/commons-compress-1.18.jar"/>
+	<classpathentry kind="lib" path="LibExcel/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="LibExcel/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="LibExcel/jaxb-api-2.3.0.jar"/>
+	<classpathentry kind="lib" path="LibExcel/jaxb-core-2.3.0.1.jar"/>
+	<classpathentry kind="lib" path="LibExcel/jaxb-impl-2.3.0.1.jar"/>
+	<classpathentry kind="lib" path="LibExcel/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="LibExcel/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="LibExcel/curvesapi-1.06.jar"/>
+	<classpathentry kind="lib" path="LibExcel/xmlbeans-3.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

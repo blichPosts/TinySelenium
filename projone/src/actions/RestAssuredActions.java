@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.testng.Assert;
 
 import helpers.Dashboard;
+import helpers.DataSet;
 import helpers.LevelInfo;
 import helpers.SisenseFolder;
 import helpers.SisenseUser;
@@ -13,6 +14,8 @@ import static io.restassured.RestAssured.*;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.http.Headers;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 //import io.restassured.matcher.RestAssuredMatchers.*;
@@ -39,18 +42,24 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	//public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQxMGYzNDg4YTAyMGExM2NjMWE0MzM1IiwiYXBpU2VjcmV0IjoiNGJlYjZkNjEtOWI0Ni0zZGUwLWZhMGYtYzJhMjE3ZjExMWRjIiwiaWF0IjoxNTYyMTAzMDY1fQ.DchYCPCC3lffkvUFbjkYxGqbFuDjAKNmnb6fbGiuI-4";
-	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTYyNTMxNTc3fQ.W3tv2zcU89_O41VnwlaOeWEC-ykncVPSR6kT3ICr8UE";
+	public static String sisenseAccessToken = "";
+
+
+	
+	
+	
 	
 	
 	public static String tempString = "";
 	public static String tempParentFolder = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
-	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1";
-
+	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1"; // dev
+	//public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1"; // qa
+	
 	public static List<String> listOfDashBoardNames = new ArrayList<>();
 	public static List<String> listOfDashBoardOids = new ArrayList<>();
-	public static List<Dashboard> listOfDashBoards = new ArrayList<>();	
+	public static List<Dashboard> listOfDashBoards = new ArrayList<>();
+	public static List<DataSet> listOfDataSetObjects = new ArrayList<>(); // zzz
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -273,6 +282,20 @@ public class RestAssuredActions extends BaseSelenium
 	                .when().get(endpoint).then().contentType(ContentType.JSON).extract().response();
 	    }
 
+	    // for token logout
+	    public static Response DoGetRequestSisenseTokenLogout(String endpoint)  
+	    {
+	        RestAssured.defaultParser = Parser.JSON;
+
+	        return
+	        		given()
+	                .header("Authorization", "Bearer " + sisenseAccessToken)	                		
+	        		.when().get(endpoint).then().extract().response();
+	    }
+
+	    
+	    
+	    
 	    public static Response DoGetRequestSisenseBoolean(String endpoint)  // MOBPROC
 	    {
 	        RestAssured.defaultParser = Parser.JSON;
@@ -335,44 +358,61 @@ public class RestAssuredActions extends BaseSelenium
 		    
 			System.out.println(response.getStatusCode());
 			JsonPath jsonPathEvaluator = response.jsonPath();
-			System.out.println("zzzzz " + jsonPathEvaluator.get());
+			System.out.println(jsonPathEvaluator.get());
 			ShowText(jsonPathEvaluator.get("access_token").toString());
+			sisenseAccessToken = jsonPathEvaluator.get("access_token").toString();
 		}
 		
 		public static void getSpecificUserDashboardData() { // zz
 			List<String> tempList;
-			Response response = DoGetRequestSisense(mainEndpoint + "/dashboards"); // get all dash boards for user token
+			Response response = DoGetRequestSisense(mainEndpoint + "/dashboards"); // get dash board oids for user token 
 	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response
 	        
-	        // store the dash board names and dash board oids into lists  
-	        listOfDashBoardNames = setupStringListFromResponseAndJsonSelector(response, "title");
+	        // get the dash board oids only out of the response. 
 	        listOfDashBoardOids = setupStringListFromResponseAndJsonSelector(response, "oid");
-	        
-	        int localCntr = 0; // get the list items into dash board objects.
-	        for(String str : listOfDashBoardNames) {
-	        	if(!str.equals("null")) {
-	        		//ShowText(str);ShowText(listOfDahBoardOids.get(localCntr));
-		        	listOfDashBoards.add(new Dashboard(str, listOfDashBoardOids.get(localCntr++)));
-	        	}
-	        	else {
-	        		localCntr++;
-	        	}
-	        }
-	        
-	        localCntr = 0; // go through dash board list and get titles that go with each dash board
-	        for(Dashboard dBoard : listOfDashBoards) {
-	        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
-	        	tempList = setupStringListFromResponseAndJsonSelector(response, "title");
-	        	if(tempList != null) {
-		        	for(String str : tempList) {
-		        		dBoard.addTitle(str);
-		        	}
-	        	}
-	        }
 
+	        if(listOfDashBoardOids == null) {
+	        	
+	        }
+	        else {
+		        // go through the oids and get 'title' field. this is the dash board name. add each name and corresto the list 
+		        for(String oid : listOfDashBoardOids) { 
+		        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/"   + oid + "?fields=title"); 
+		        	Assert.assertTrue(setupStringListFromResponseAndJsonSelector(response, "title").size() == 1); // should only get one item back 
+		        	tempString = setupStringListFromResponseAndJsonSelector(response, "title").toString(); 
+		        	listOfDashBoardNames.add(tempString.replace("[","").replace("]","") ); // add dash name and oid to dash board list
+		        }
+		        
+		        int cntr = 0;
+		        for(String str: listOfDashBoardNames) {
+		        	listOfDashBoards.add(new Dashboard(str, listOfDashBoardOids.get(cntr++)));
+		        }
+
+		        for(Dashboard dBoard : listOfDashBoards) {
+		        	response = DoGetRequestSisense(mainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
+		        	tempList = setupStringListFromResponseAndJsonSelector(response, "title");
+		        	System.out.println(tempList);
+		        	if(tempList != null) {
+			        	for(String str : tempList) {
+			        		dBoard.addTitle(str);
+			        	}
+		        	}
+		        }
+	        }
 	        for(Dashboard dBoard : listOfDashBoards) {
 	        	dBoard.Show();
 	        }
+		}
+		
+		public static void logoutSisenseToken() {
+			Response response = DoGetRequestSisenseTokenLogout(mainEndpoint + "/authentication/logout"); 
+			Assert.assertTrue(response.getStatusCode() == 200);
+
+			//Headers allHeaders = response.headers();
+			// Iterate over all the Headers
+			//for(Header header : allHeaders){
+			//	System.out.println("Key: " + header.getName() + " Value: " + header.getValue());
+			//}
 		}
 		
 		public static void getSisenseUsers() {
@@ -670,34 +710,6 @@ public class RestAssuredActions extends BaseSelenium
 			
 		}
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		public static boolean isAllSpaces(String strIn) {
 			
 			for(int x = 0; x < strIn.length(); x++) {
@@ -793,6 +805,23 @@ public class RestAssuredActions extends BaseSelenium
 	        return Arrays.asList(usersNames); // return as list
 		}
 		
+		public static List<String> setupStringListFromResponseAndJsonSelectorIndex(Response response, String jsonSelector, int index) {
+			//ShowText(jsonSelector);
+			int cntr = 0;
+			if(response.jsonPath().getString(jsonSelector).equals("[]")){ // query found nothing
+				return null;
+			}
+			tempString = response.jsonPath().getString(jsonSelector + "[" + index  + "]").replace("[","").replace("]", ""); // remove leading and trailing brackets.
+	        String[] usersNames =  tempString.split(",");  // put in string array
+	        for(String string :usersNames) { // trim spaces
+	        	usersNames[cntr++] = string.trim();
+	        }
+	        return Arrays.asList(usersNames); // return as list
+		}
+		
+		
+		
+		
 		public static List<String> setupStringListFromResponseAndJsonSelectorWithFailCondition(Response response, String jsonSelector) {
 			ShowText(jsonSelector);
 			int cntr = 0;
@@ -811,4 +840,57 @@ public class RestAssuredActions extends BaseSelenium
 		public static void ShowList(List<String> listIn) {
 			for(String str : listIn) {ShowText(str);}
 		}
+		
+		public static void WorkOnElasticCubes() { // zzz
+			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
+			Assert.assertEquals(response.getStatusCode(), 200);
+
+			List<String> listOfDataSetsNames = setupStringListFromResponseAndJsonSelector(response, "datasets.name");
+			List<String> listOfDataSetsOids = setupStringListFromResponseAndJsonSelector(response, "datasets.oid");		
+			
+			
+			
+			
+			
+			
+			
+			Assert.assertTrue(listOfDataSetsNames.size() == listOfDataSetsOids.size());
+			
+			
+			for(int x = 0; x < listOfDataSetsNames.size(); x++) {
+				System.out.println("-----------------------------");
+				System.out.println(listOfDataSetsNames.get(x));
+				System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size());
+				for(int z = 0; z < setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size(); z++) {
+					System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name"));
+				}
+				//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.columns.name"));				
+			}
+			
+			
+			//for(int x = 0; x < listOfDataSetsNames.size(); x++) {
+			//	listOfDataSetObjects.add(new DataSet(listOfDataSetsNames.get(x), listOfDataSetsOids.get(x)));
+			//}
+			
+			//for(DataSet dset : listOfDataSetObjects) {
+			//	dset.Show();
+			//}
+
+
+			//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets.oid"));
+			//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[0].schema.tables.oid"));
+			
+			
+			
+			
+			//List<String> listOfTableNames = setupStringListFromResponseAndJsonSelector(response, "datasets.schema.tables.name");
+			//System.out.println(listOfTableNames.size());
+			
+		}
+		
+		
+		
+		
+		
+		
 }
