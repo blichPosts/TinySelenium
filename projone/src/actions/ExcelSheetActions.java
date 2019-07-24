@@ -12,7 +12,8 @@ import helpers.DatabaseTable;
 public class ExcelSheetActions {
 
 	public static List<DatabaseTable> listOfDataBaseTables = new ArrayList<DatabaseTable>(); 
-
+	public static String currentFieldName = "";
+	public static String currentFieldAlias = "";
 	
 	// read excel sheet
 	// https://www.callicoder.com/java-read-excel-file-apache-poi/
@@ -45,26 +46,31 @@ public class ExcelSheetActions {
         	
         	// loop through the rows of selected sheet
         	for(Cell cell: row) {
-            	if(cell.getColumnIndex() == 5){ // check table name column
+            	
+        		// check table name column. if it has a name, create a new database table object, add it to the list of database tables, and update the number of stored databases counter.
+        		if(cell.getColumnIndex() == 5){ 
             		if(cell.toString() != "") { 
                         String cellValue = dataFormatter.formatCellValue(cell);
-                        //System.out.println("Table ***** " +  cellValue);
                         listOfDataBaseTables.add(new DatabaseTable(cellValue));
                         numberOfStoredDatabases++;
             		}
             	}
             	
-            	if(cell.getColumnIndex() == 6){
+        		// store field name (column name)
+            	if(cell.getColumnIndex() == 6){ 
                     String cellValue = dataFormatter.formatCellValue(cell);
-                    //ystem.out.print(cellValue + "\t");
-                    listOfDataBaseTables.get(numberOfStoredDatabases).addColumnName(cellValue);
+                    currentFieldName = cellValue;
             	}
-            	
-            	if(cell.getColumnIndex() == 12){
+            	 
+            	// this is the last cell in the row to check (field alias). after getting this value the field name and field alias can be added to the currently active database tables.
+            	if(cell.getColumnIndex() == 12){  
             		if(cell.toString() != "") { 
                 		String cellValue = dataFormatter.formatCellValue(cell);
-                        System.out.println("Field Alias " +  cellValue);
+                        currentFieldAlias = cellValue;
             		}
+                    listOfDataBaseTables.get(numberOfStoredDatabases).addFields(currentFieldName, currentFieldAlias);
+                    currentFieldAlias = "";
+                    currentFieldName = "";
             	}
         	}
         }

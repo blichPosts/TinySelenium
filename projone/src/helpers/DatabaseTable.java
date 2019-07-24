@@ -6,28 +6,24 @@ import java.util.List;
 public class DatabaseTable {
 
 	public String m_tableName = "";
-	public List<String> columnNames; 
+	public List<Fields> listOfFieldNames; 
 	
 	public DatabaseTable(String name) {
 		m_tableName = name;
-		columnNames = new ArrayList<String>();
+		listOfFieldNames = new ArrayList<Fields>();
 	}
 	
-	public void addColumnName(String columnName){
-		columnNames.add(columnName);
+	public void addFields(String fieldName, String fieldAlias){
+		listOfFieldNames.add(new Fields(fieldName, fieldAlias));
 	}
 	
 	public void Show() {
 		System.out.println("*********************");
 		System.out.println("Data Base Name: " + m_tableName);
-		System.out.println("Column Names:");
-		for(String str : columnNames) {
-			System.out.println(str);
+		System.out.println("Fields ---- ");
+		for(Fields field : listOfFieldNames) {
+			System.out.print("Field Name: " + field.m_fieldName + "\t");
+			System.out.println("Field Alias: " + field.m_fieldAlias);
 		}
-		
 	}
-	
- 
-	
-	
 }

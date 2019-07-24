@@ -36,12 +36,13 @@ public class RestTestWithTxcelSheet {
 		//RestAssuredActions.getFoldersFourBuildList();
 		
 		
-		/*
-		RestAssuredActions.postTokenSisenseForSpecifiedUser("bob.lichtenfels@tangoe.com");
-		//RestAssuredActions.getSpecificUserDashboardData();
-		RestAssuredActions.WorkOnElasticCubes();
-		RestAssuredActions.logoutSisenseToken();
-		*/
+
+		//RestAssuredActions.postTokenSisenseForSpecifiedUser("bob.lichtenfels@tangoe.com");
+		//RestAssuredActions.getSpecificUserSisenseDashboardDataAdmin();
+		//RestAssuredActions.getSpecificUserSisenseDashboardDataAdmin();
+		// RestAssuredActions.WorkOnElasticCubes();
+		//RestAssuredActions.logoutSisenseToken();
+
 		
 		ExcelSheetActions.readExcelSheet();
 		

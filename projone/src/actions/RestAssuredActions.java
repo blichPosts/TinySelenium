@@ -54,6 +54,9 @@ public class RestAssuredActions extends BaseSelenium
 	public static String tempParentFolder = "";
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
 	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1"; // dev
+	public static String sisenseMainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1"; // dev
+	
+	
 	//public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1"; // qa
 	
 	public static List<String> listOfDashBoardNames = new ArrayList<>();
@@ -363,6 +366,56 @@ public class RestAssuredActions extends BaseSelenium
 			sisenseAccessToken = jsonPathEvaluator.get("access_token").toString();
 		}
 		
+		// bladd special for admin user.
+		// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// 
+		// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		public static List<Dashboard> getSpecificUserSisenseDashboardDataAdmin() { 
+			List<String> tempList;
+			Response response = DoGetRequestSisense(sisenseMainEndpoint + "/dashboards"); // get dash board oids for user token 
+	        Assert.assertEquals(response.getStatusCode(), 200); // verify 200 response
+	        
+	        // get the dash board oids out of the response. 
+	        listOfDashBoardOids = setupStringListFromResponseAndJsonSelector(response, "oid");
+
+	        if(listOfDashBoardOids == null) {
+	        	return null;
+	        }
+	        else {
+		        // go through the oids and get 'title' field (dash board name). add each name to dashboard list 
+		        for(String oid : listOfDashBoardOids) { 
+		        	response = DoGetRequestSisense(sisenseMainEndpoint + "/dashboards/"   + oid + "?fields=title"); // query on a dash board oid and get back name (response called title) section into response  
+		        	Assert.assertTrue(setupStringListFromResponseAndJsonSelector(response, "title").size() == 1); // should only get one name (response called title) section back 
+		        	tempString = setupStringListFromResponseAndJsonSelector(response, "title").toString();  // get the name (response called title) out of response and convert to string. 
+		        	Assert.assertTrue(tempString != null);
+		        	listOfDashBoardNames.add(tempString.replace("[","").replace("]","") ); // add dash title/name and to dash board names list after removing list brackets.
+		        }
+		        
+		        Assert.assertTrue(listOfDashBoardOids.size() == listOfDashBoardNames.size()); // extra sanity
+		        
+		        // create list of dash board objects.
+		        int cntr = 0; 
+		        for(String dashBoardName: listOfDashBoardNames) {
+		        	listOfDashBoards.add(new Dashboard(dashBoardName, listOfDashBoardOids.get(cntr++)));
+		        }
+
+		        // add widget title names for each dash board.
+		        for(Dashboard dBoard : listOfDashBoards) {
+		        	response = DoGetRequestSisense(sisenseMainEndpoint + "/dashboards/" + dBoard.m_Oid + "/widgets?fields=title"); //
+		        	tempList = setupStringListFromResponseAndJsonSelector(response, "title");
+		        	if(tempList != null) {
+			        	for(String titleName : tempList) {
+			        		dBoard.addTitle(titleName);
+			        	}
+		        	}
+		        }
+	        }
+	        return listOfDashBoards;
+		}	
+
+		
+		
+		
 		public static void getSpecificUserDashboardData() { // zz
 			List<String> tempList;
 			Response response = DoGetRequestSisense(mainEndpoint + "/dashboards"); // get dash board oids for user token 
@@ -408,6 +461,8 @@ public class RestAssuredActions extends BaseSelenium
 			Response response = DoGetRequestSisenseTokenLogout(mainEndpoint + "/authentication/logout"); 
 			Assert.assertTrue(response.getStatusCode() == 200);
 
+			
+			
 			//Headers allHeaders = response.headers();
 			// Iterate over all the Headers
 			//for(Header header : allHeaders){
