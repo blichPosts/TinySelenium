@@ -6,10 +6,12 @@ import java.util.List;
 public class DatabaseTable {
 
 	public String m_tableName = "";
+	public boolean m_tableFound; // zzz
 	public List<Fields> listOfFieldNames; 
 	
 	public DatabaseTable(String name) {
 		m_tableName = name;
+		m_tableFound = false;
 		listOfFieldNames = new ArrayList<Fields>();
 	}
 	
@@ -23,9 +25,18 @@ public class DatabaseTable {
 		}
 	}
 	
+	public void clearTableFound() { // zzz
+		m_tableFound = false;
+	}
+	
+	public void setTableFound() { // zzz
+		m_tableFound = true;
+	}
+	
+	
 	public void Show() {
 		System.out.println("*********************");
-		System.out.println("Data Base Name: " + m_tableName);
+		System.out.println("Data Base Table Name: " + m_tableName); // zzz
 		System.out.println("Fields ---- ");
 		for(Fields field : listOfFieldNames) {
 			System.out.print("Field Name: " + field.m_fieldName + "\t");

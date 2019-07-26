@@ -48,7 +48,7 @@ public class RestTestWithTxcelSheet {
 		// Excel below
 		//ExcelSheetActions.readExcelSheet();
 		//ExcelSheetActions.readExcelSheetTwo();
-		RestAssuredActions.WorkOnElasticCubes();
+		RestAssuredActions.LoadElasticCubeData();
 		//DataBaseTestClass.runTest1();
 		
 		

@@ -6,6 +6,8 @@ import org.testng.Assert;
 
 import helpers.Dashboard;
 import helpers.DataSet;
+import helpers.DatabaseTable;
+import helpers.Fields;
 import helpers.LevelInfo;
 import helpers.SisenseFolder;
 import helpers.SisenseUser;
@@ -49,6 +51,8 @@ public class RestAssuredActions extends BaseSelenium
 	public static List<SisenseUser> listOfSisenseUsers = new ArrayList<SisenseUser>();
 	public static String mainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1"; // dev
 	public static String sisenseMainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/v1"; // dev
+	public static String tempTableName = "";
+	
 	
 	
 	//public static String mainEndpoint = "http://naqagvbi01b.corp.tangoe.com:8081/api/v1"; // qa
@@ -57,7 +61,7 @@ public class RestAssuredActions extends BaseSelenium
 	public static List<String> listOfDashBoardOids = new ArrayList<>();
 	public static List<Dashboard> listOfDashBoards = new ArrayList<>();
 	public static List<DataSet> listOfDataSetObjects = new ArrayList<>(); // zzz
-	// public static List<DataSet> listOfDataSetObjects = new ArrayList<>(); // zzz
+
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -891,7 +895,24 @@ public class RestAssuredActions extends BaseSelenium
 			for(String str : listIn) {ShowText(str);}
 		}
 		
-		public static void WorkOnElasticCubes() { // zzz
+		/*
+		 * this method can go in API requests 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
+		
+		public static void LoadElasticCubeData() throws Exception { // zzz
+
+			ExcelSheetActions.readExcelSheetTwo(); // read and store excel sheet <<<<<<<<-------- THIS WILL BE DONE IN THE TEST_db 
+			
+			
+			// GET a token for bob.lichtenfels@tangoe.com -- call get qa admin user <<<<<<<<<<<<<<<<-----------------------------
+			
+			
 			//Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
 			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Cloud_Analytics");
 			Assert.assertEquals(response.getStatusCode(), 200);
@@ -901,42 +922,69 @@ public class RestAssuredActions extends BaseSelenium
 
 			Assert.assertTrue(listOfDataSetsNames.size() == listOfDataSetsOids.size());
 			
+			System.out.println("-----------------------------");
+			System.out.println("Oid and names size (number of data sets = " + listOfDataSetsNames.size() + ")" );
 			
-			for(int x = 0; x < listOfDataSetsNames.size(); x++) { // reponse has list of data sets
+			for(int x = 0; x < listOfDataSetsNames.size(); x++) { // go through data sets
 				System.out.println("-----------------------------");
 				System.out.println("Dataset Name = " + listOfDataSetsNames.get(x));
 				System.out.println("Number of table names = " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size());
+				
+				listOfDataSetObjects.add(new DataSet(listOfDataSetsNames.get(x), listOfDataSetsNames.get(x)));
+				
+				// go through tables in data set
 				for(int z = 0; z < setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size(); z++) {
-					System.out.println("Table name " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name"));
-
-					System.out.println("Column size " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name").size());
-					List<String> strBack = setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name");
-					System.out.println("Columns " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name"));
+					// store table name
+					tempTableName = setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name").toString();
+					tempTableName = tempTableName.replace("[","").replace("]", "");
+					
+					// get the columns for the table name
+					List<String> listOfTableColumns = setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name");
+					
+					// add table and columns to current data set.  
+					listOfDataSetObjects.get(listOfDataSetObjects.size() - 1).addTable(tempTableName, listOfTableColumns);
 				}
-				//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.columns.name"));				
+			}
+
+			// CLEAR TOKEN <<<<<<<<<<<<<< -----------------------------------------
+			
+			
+			/*
+			ShowText("==============================================================================");
+			for(DataSet dSet : listOfDataSetObjects) {
+				dSet.Show();
+			}
+			ShowText("==============================================================================");
+			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
+				dataBaseTable.Show();
+			}
+			*/
+			
+			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
+				// go through all the sisense cubes. find the table name and then verify the columns 
+				for(DataSet dSet : listOfDataSetObjects) {
+					if(dSet.searchForTable(dataBaseTable.m_tableName) != null) {
+						System.out.println("Found table " +  dataBaseTable.m_tableName + "  " +      dSet.searchForTable(dataBaseTable.m_tableName));
+						dataBaseTable.setTableFound();
+						List<String> ret = dSet.searchForTable(dataBaseTable.m_tableName);
+						for(Fields field: dataBaseTable.listOfFieldNames) {
+							if(!ret.contains(field.m_sisenseField)) {
+								ShowText("ERRRRR spread sheet column " + field.m_sisenseField + " not found in sisense cube");
+							}
+						}
+					}
+				}
+	        }
+			
+			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
+				if(dataBaseTable.m_tableFound == false) {
+					System.out.println("table not found = " + dataBaseTable.m_tableName);
+				}
 			}
 			
 			
-			//for(int x = 0; x < listOfDataSetsNames.size(); x++) {
-			//	listOfDataSetObjects.add(new DataSet(listOfDataSetsNames.get(x), listOfDataSetsOids.get(x)));
-			//}
-			
-			//for(DataSet dset : listOfDataSetObjects) {
-			//	dset.Show();
-			//}
-
-
-			//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets.oid"));
-			//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[0].schema.tables.oid"));
-			
-			
-			
-			
-			//List<String> listOfTableNames = setupStringListFromResponseAndJsonSelector(response, "datasets.schema.tables.name");
-			//System.out.println(listOfTableNames.size());
 			
 		}
-		
 		
 		
 		

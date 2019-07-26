@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.*; // excel read in sheet // zzz
+import org.apache.poi.ss.usermodel.*; // excel read in sheet 
 import org.codehaus.groovy.transform.sc.ListOfExpressionsExpression;
 
 import helpers.DatabaseTable;
@@ -127,7 +127,7 @@ public class ExcelSheetActions {
         		if(cell.getColumnIndex() == 5){ 
             		if(cell.toString() != "") { 
                         String cellValue = dataFormatter.formatCellValue(cell);
-                        listOfDataBaseTables.add(new DatabaseTable(cellValue));
+                        listOfDataBaseTables.add(new DatabaseTable(cellValue.trim())); // zzz
                         numberOfStoredDatabases++;
             		}
             	}
@@ -149,7 +149,7 @@ public class ExcelSheetActions {
             	// when get here the field name and field alias can be added to the currently active database table.
             	if(cell.getColumnIndex() == 14){ 
 	        		if(!currentFieldName.equals("")) {
-	            		listOfDataBaseTables.get(numberOfStoredDatabases).addFields(currentFieldName, currentFieldAlias);            			
+	            		listOfDataBaseTables.get(numberOfStoredDatabases).addFields(currentFieldName.trim(), currentFieldAlias.trim()); // zzz            			
 	            	}
                     currentFieldAlias = "";
                     currentFieldName = "";
