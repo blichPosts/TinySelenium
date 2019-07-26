@@ -14,7 +14,7 @@ public class DataSet {
 		m_oid = oid;
 	}
 	
-	public void addTable(String name, String oid){
+	public void addTable(String name, String oid, List<String> columns){
 		
 	}
 	

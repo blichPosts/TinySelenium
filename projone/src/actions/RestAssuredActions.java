@@ -42,13 +42,7 @@ public class RestAssuredActions extends BaseSelenium
 	
 	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
 	
-	public static String sisenseAccessToken = "";
-
-
-	
-	
-	
-	
+	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTY0MDU1NTExfQ.wIZPjCfFFP52kkvs79mGaxraJ6AvWsaUXiFIEM4BfzQ";
 	
 	public static String tempString = "";
 	public static String tempParentFolder = "";
@@ -63,6 +57,7 @@ public class RestAssuredActions extends BaseSelenium
 	public static List<String> listOfDashBoardOids = new ArrayList<>();
 	public static List<Dashboard> listOfDashBoards = new ArrayList<>();
 	public static List<DataSet> listOfDataSetObjects = new ArrayList<>(); // zzz
+	// public static List<DataSet> listOfDataSetObjects = new ArrayList<>(); // zzz
 	
 	public static void SanityCheck() throws JSONException {
 			
@@ -897,27 +892,26 @@ public class RestAssuredActions extends BaseSelenium
 		}
 		
 		public static void WorkOnElasticCubes() { // zzz
-			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
+			//Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
+			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Cloud_Analytics");
 			Assert.assertEquals(response.getStatusCode(), 200);
 
 			List<String> listOfDataSetsNames = setupStringListFromResponseAndJsonSelector(response, "datasets.name");
 			List<String> listOfDataSetsOids = setupStringListFromResponseAndJsonSelector(response, "datasets.oid");		
-			
-			
-			
-			
-			
-			
-			
+
 			Assert.assertTrue(listOfDataSetsNames.size() == listOfDataSetsOids.size());
 			
 			
-			for(int x = 0; x < listOfDataSetsNames.size(); x++) {
+			for(int x = 0; x < listOfDataSetsNames.size(); x++) { // reponse has list of data sets
 				System.out.println("-----------------------------");
-				System.out.println(listOfDataSetsNames.get(x));
-				System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size());
+				System.out.println("Dataset Name = " + listOfDataSetsNames.get(x));
+				System.out.println("Number of table names = " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size());
 				for(int z = 0; z < setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size(); z++) {
-					System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name"));
+					System.out.println("Table name " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name"));
+
+					System.out.println("Column size " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name").size());
+					List<String> strBack = setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name");
+					System.out.println("Columns " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].columns.name"));
 				}
 				//System.out.println(setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.columns.name"));				
 			}

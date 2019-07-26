@@ -16,6 +16,12 @@ public class DatabaseTable {
 	public void addFields(String fieldName, String fieldAlias){
 		listOfFieldNames.add(new Fields(fieldName, fieldAlias));
 	}
+
+	public void setupSisenseFields() {
+		for(Fields fields: listOfFieldNames) {
+			fields.setupSisenseField();
+		}
+	}
 	
 	public void Show() {
 		System.out.println("*********************");

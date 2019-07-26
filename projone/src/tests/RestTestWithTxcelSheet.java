@@ -6,6 +6,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import actions.DataBaseTestClass;
 import actions.ExcelSheetActions;
 import actions.RestAssuredActions;
 
@@ -44,7 +45,11 @@ public class RestTestWithTxcelSheet {
 		//RestAssuredActions.logoutSisenseToken();
 
 		
-		ExcelSheetActions.readExcelSheet();
+		// Excel below
+		//ExcelSheetActions.readExcelSheet();
+		//ExcelSheetActions.readExcelSheetTwo();
+		RestAssuredActions.WorkOnElasticCubes();
+		//DataBaseTestClass.runTest1();
 		
 		
 	}
