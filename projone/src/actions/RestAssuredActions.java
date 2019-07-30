@@ -901,8 +901,9 @@ public class RestAssuredActions extends BaseSelenium
 		 * 
 		 * 
 		 * 
-		 * 
-		 * 
+		 * 			BUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  ------- missing item in spreadsheet is not found --- 
+		 * 							EP_TENANT table has TENANK_FK column but it is not in the spread sheet.
+		 * 		 
 		 */
 		
 		public static void LoadElasticCubeData() throws Exception { // zzz
