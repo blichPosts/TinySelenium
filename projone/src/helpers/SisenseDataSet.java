@@ -10,7 +10,7 @@ public class SisenseDataSet {
 	String m_oid = "";
 	//public boolean m_foundTable;
 	
-	public List<SisenseTable> listOfTables = new ArrayList<SisenseTable>();
+	public List<SisenseTable> listOfTables = new ArrayList<SisenseTable>(); // list of sisense tables in data set 
 	
 	public SisenseDataSet(String name, String oid) {
 		m_name = name;
@@ -25,16 +25,14 @@ public class SisenseDataSet {
 	public List<String> searchForSisenseTableAndReturnColumns(String tableName) {
 		for(SisenseTable table: listOfTables) {
 			if(table.m_name.equals(tableName)) {
-			 	// need to return list of strings
-				
-				
-				
-				
+			 	// need to return list of strings that are the column names
+				return table.getSisenseColumnNames();
 			}
 		}
 		return null;
 	}
 	
+	// see if sisense table name is found in data set
 	public boolean searchForSisenseTable(String tableName) {
 		for(SisenseTable table: listOfTables) {
 			if(table.m_name.equals(tableName)) {
@@ -42,6 +40,16 @@ public class SisenseDataSet {
 			}
 		}
 		return false;
+	}
+	
+	
+	public List<SisenseColumn> getSisenseColumnsForSisenseTable(String tableName) {
+		for(SisenseTable table: listOfTables) {
+			if(table.m_name.equals(tableName)) {
+				return table.getSisenseColumns();
+			}
+		}
+		return null;
 	}
 	
 	//public void setTableFound(String tableName) {

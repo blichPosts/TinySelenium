@@ -25,6 +25,10 @@ public class SisenseTable {
 		return tempList;
 	}
 	
+	public List<SisenseColumn> getSisenseColumns(){
+		return m_columns;
+	}
+	
 	
 	public void Show() {
 		System.out.println("Sisense Cube Table Name: " + m_name);

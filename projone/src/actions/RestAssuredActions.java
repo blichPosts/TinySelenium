@@ -9,7 +9,9 @@ import helpers.SisenseDataSet;
 import helpers.DatabaseTable;
 import helpers.Fields;
 import helpers.LevelInfo;
+import helpers.SisenseColumn;
 import helpers.SisenseFolder;
+import helpers.SisenseTable;
 import helpers.SisenseUser;
 
 import static io.restassured.RestAssured.*;
@@ -951,44 +953,52 @@ public class RestAssuredActions extends BaseSelenium
 			
 			
 
-			ShowText("==============================================================================");
+			ShowText("Sisense data ==============================================================================");
 			for(SisenseDataSet dSet : listOfDataSetObjects) {
 				dSet.Show();
 			}
-			//ShowText("==============================================================================");
-			//for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
-			//	dataBaseTable.Show();
-			//}
-			
-			/*
+			ShowText("Excel data ==============================================================================");
 			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
-				for(SisenseDataSet dSet : listOfDataSetObjects) { // got through the list of data set objects from sisense
+				dataBaseTable.Show();
+			}
+			
+			ShowText("Begin Test ==============================================================================");
+			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) { // go through the tables in the excel sheet
+				for(SisenseDataSet dSet : listOfDataSetObjects) { // go through the list of data set objects from sisense
 					if(dSet.searchForSisenseTable(dataBaseTable.m_tableName)) { // see if database table name from spread sheet is found in the data set object from sisense
 						System.out.println("Found table " +  dataBaseTable.m_tableName + " and these expected tables " + dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName) + " in sisense");
 						dataBaseTable.setTableFound(); // set found flag in list of database tables from Excel 
 						
 						// look for the columns that go with database table found in sisense data set
 						List<String> actualSisnseTables = dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName);  
-						for(Fields field: dataBaseTable.listOfFieldNames) { // go through the expected columns in the spread sheet and find each one in the sisense list of actual columns   
-							if(!actualSisnseTables.contains(field.m_sisenseField)) { // see if list of actual sisense tables contains the expected field (column) in the database table in excel  
-								ShowText("ERRRRR spread sheet column " + field.m_sisenseField + " found in excel sheet but not found in sisense cube");
+						for(Fields excelField: dataBaseTable.listOfFieldNames) { // go through the expected columns in the excel sheet and find each one in the sisense list of actual columns   
+							if(!actualSisnseTables.contains(excelField.m_sisenseField)) { // see if list of actual sisense tables contains the expected field (column) in the database table in excel  
+								ShowText("ERRRRR spread sheet column " + excelField.m_sisenseField + " found in excel sheet but not found in sisense cube");
 							}
+							
+							//  
+							List<SisenseColumn> sisenseColumnsList = dSet.getSisenseColumnsForSisenseTable(dataBaseTable.m_tableName);
+							for(SisenseColumn sisensecolumn : sisenseColumnsList) {
+								if(sisensecolumn.m_Name.equals(sisensecolumn.m_Name)) {
+									
+								}
+							}
+							
+
+							
+							
+							
 						}
 					}
 				}
 	        }
-			*/
-			/*
+
+
 			System.out.println("\n\nLook for tables in excel spread sheet that are not found.");
 			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
 				if(dataBaseTable.m_tableFound == false) {
 					System.out.println("table not found = " + dataBaseTable.m_tableName);
 				}
 			}
-			*/
-			
-			
-			
-			
 		}
 }
