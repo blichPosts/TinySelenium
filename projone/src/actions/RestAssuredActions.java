@@ -910,11 +910,13 @@ public class RestAssuredActions extends BaseSelenium
 		
 		public static void LoadElasticCubeData() throws Exception { // zzz
 
+			boolean foundSisenseColumnForExcelSheetColumn = false;
+			List<SisenseColumn> listOfSisenseColumns;
+			
 			ExcelSheetActions.readExcelSheetTwo(); // read and store excel sheet <<<<<<<<-------- THIS WILL BE DONE IN THE TEST_db 
 			
 			
 			// GET a token for bob.lichtenfels@tangoe.com -- call get qa admin user <<<<<<<<<<<<<<<<-----------------------------
-			
 			
 			//Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
 			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Cloud_Analytics");
@@ -933,7 +935,7 @@ public class RestAssuredActions extends BaseSelenium
 				System.out.println("Dataset Name = " + listOfDataSetsNames.get(x));
 				System.out.println("Number of table names = " + setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size());
 				
-				listOfDataSetObjects.add(new SisenseDataSet(listOfDataSetsNames.get(x), listOfDataSetsNames.get(x)));
+				listOfDataSetObjects.add(new SisenseDataSet(listOfDataSetsNames.get(x), listOfDataSetsOids.get(x)));
 				
 				// go through tables in data set
 				for(int z = 0; z < setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size(); z++) {
@@ -952,7 +954,6 @@ public class RestAssuredActions extends BaseSelenium
 			// CLEAR TOKEN <<<<<<<<<<<<<< -----------------------------------------
 			
 			
-
 			ShowText("Sisense data ==============================================================================");
 			for(SisenseDataSet dSet : listOfDataSetObjects) {
 				dSet.Show();
@@ -963,42 +964,62 @@ public class RestAssuredActions extends BaseSelenium
 			}
 			
 			ShowText("Begin Test ==============================================================================");
-			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) { // go through the tables in the excel sheet
-				for(SisenseDataSet dSet : listOfDataSetObjects) { // go through the list of data set objects from sisense
+			
+			// go through the tables in the excel sheet and look for each table and corresponding columns in the sisense cube
+			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) { 
+				for(SisenseDataSet dSet : listOfDataSetObjects) { // go through the list of data set objects from sisense and try to find the excel table
 					if(dSet.searchForSisenseTable(dataBaseTable.m_tableName)) { // see if database table name from spread sheet is found in the data set object from sisense
-						System.out.println("Found table " +  dataBaseTable.m_tableName + " and these expected tables " + dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName) + " in sisense");
+						System.out.println("Found table " +  dataBaseTable.m_tableName + " and these actual columns " + dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName) + " in sisense");
 						dataBaseTable.setTableFound(); // set found flag in list of database tables from Excel 
 						
-						// look for the columns that go with database table found in sisense data set
+						// look for the ....
 						List<String> actualSisnseTables = dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName);  
-						for(Fields excelField: dataBaseTable.listOfFieldNames) { // go through the expected columns in the excel sheet and find each one in the sisense list of actual columns   
-							if(!actualSisnseTables.contains(excelField.m_sisenseField)) { // see if list of actual sisense tables contains the expected field (column) in the database table in excel  
-								ShowText("ERRRRR spread sheet column " + excelField.m_sisenseField + " found in excel sheet but not found in sisense cube");
-							}
+						for(Fields excelField: dataBaseTable.listOfFieldNames) { // go through the expected columns in the excel sheet and look for each one in the sisense list of actual columns   
 							
-							//  
+							//if(!actualSisnseTables.contains(excelField.m_sisenseField)) { // see if list of actual sisense columns contains the expected field (column) in the database table in excel  
+							//	ShowText("ERRRRR spread sheet column " + excelField.m_sisenseField + " found in excel sheet but not found in sisense cube");
+							//}
+
+							foundSisenseColumnForExcelSheetColumn = false;
+							
+							// get the sisense columns that go with the   
 							List<SisenseColumn> sisenseColumnsList = dSet.getSisenseColumnsForSisenseTable(dataBaseTable.m_tableName);
 							for(SisenseColumn sisensecolumn : sisenseColumnsList) {
-								if(sisensecolumn.m_Name.equals(sisensecolumn.m_Name)) {
-									
+								if(sisensecolumn.m_Name.equals(excelField.m_sisenseField)) {
+									foundSisenseColumnForExcelSheetColumn = true;
+									sisensecolumn.m_coulumnFound = true;
+									break;
 								}
 							}
 							
-
-							
-							
-							
+							if(!foundSisenseColumnForExcelSheetColumn) {
+								Assert.fail("Failed to find excel sheet column name " + excelField.m_fieldName + " Table name = "  + dataBaseTable.m_tableName);
+							}
 						}
 					}
 				}
 	        }
-
 
 			System.out.println("\n\nLook for tables in excel spread sheet that are not found.");
 			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
 				if(dataBaseTable.m_tableFound == false) {
 					System.out.println("table not found = " + dataBaseTable.m_tableName);
 				}
+			}
+			
+			for(SisenseDataSet dSet : listOfDataSetObjects){
+				//System.out.println(dSet.);
+				
+				//listOfSisenseColumns = dSet.getSisenseColumnsForDataSet();
+				
+				
+				
+				
+				//for(SisenseColumn sisenseColumn : listOfSisenseColumns) {
+				//	if(!sisenseColumn.m_coulumnFound) {
+				//		System.out.println("Extra sisense column " + sisenseColumn.m_Name);
+				//	}
+				//}
 			}
 		}
 }

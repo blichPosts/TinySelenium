@@ -52,6 +52,7 @@ public class SisenseDataSet {
 		return null;
 	}
 	
+	
 	//public void setTableFound(String tableName) {
 	//	m_foundTable = true;
 	//}
