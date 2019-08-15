@@ -9,12 +9,12 @@ public class SisenseFolder {
 	public String m_ParentFolder = "";
 	public int m_level = -1; 
 	
-	public SisenseFolder(String folderName, String oid, String parentFolder, int level) {
-		m_FolderName = folderName;
-		m_oid = oid;
-		m_ParentFolder = parentFolder;
-		m_level = level;
-	}
+	//public SisenseFolder(String folderName, String oid, String parentFolder, int level) {
+	//	m_FolderName = folderName;
+	//	m_oid = oid;
+	//	m_ParentFolder = parentFolder;
+	//	m_level = level;
+	//}
 	
 	
 	/*

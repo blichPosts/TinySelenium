@@ -44,7 +44,7 @@ public class RestAssuredActions extends BaseSelenium
 {
 	public static Map<String , Object > parametersMap = new HashMap<String,Object>();
 	
-	public static String accessToken = "MFFIZ7gy7B9BVgQStf7nBhljY5ml";
+	public static String accessToken = "dTrVgiH4FqmrN9SRTQsp6HbfPs6Z";
 	
 	public static String sisenseAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNWQwYTg2ZDZlYjczOGUyOTBjMTY0YmZhIiwiYXBpU2VjcmV0IjoiOWE2OWEzNTctNDM4OS1hN2ZiLWQwNjEtMjhhNWRlMjc4ZGQxIiwiaWF0IjoxNTY0MDU1NTExfQ.wIZPjCfFFP52kkvs79mGaxraJ6AvWsaUXiFIEM4BfzQ";
 	
@@ -173,7 +173,7 @@ public class RestAssuredActions extends BaseSelenium
 			//Response response = DoGetRequestMobprocHeaderList("https://tngo-qa-mobproc.cloudhub.io/mobproc/v1.qa/assets/devices?limit=10&offset=0", CreateHeadersMap());
 			
 			//String params = "offset=0,limit=5,companyEmployeeId=3174020727"; // setup query parameters
-			String params = "offset=100,limit=10"; // setup query parameters			
+			String params = "offset=0,limit=10"; // setup query parameters			
 			
 			
 			// make call by getting always-needed header parameters and parameters setup in params variable. 
@@ -366,6 +366,73 @@ public class RestAssuredActions extends BaseSelenium
 			ShowText(jsonPathEvaluator.get("access_token").toString());
 			sisenseAccessToken = jsonPathEvaluator.get("access_token").toString();
 		}
+		// //////////////////////////////////////////////////////////////////////
+		// JAQL
+		// //////////////////////////////////////////////////////////////////////
+		public static void postSisenseJaql(String specifiedUser) {
+			String localMainEndpoint = "http://nadevgvbi01b.corp.tangoe.com:8081/api/elasticubes/Sample Healthcare/jaql";
+			//RestAssured.baseURI ="http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login";
+			//RestAssured.baseURI = "http://dc1devapp08.prod.tangoe.com:8081/api/v1/authentication/login"; // sil's mail 
+			
+		    String payload = "{\n" +
+		            "  \"username\": \"" + specifiedUser + "\",\n" +
+		            "  \"password\": \"Tangoe1!\"\n" +
+		            "}";			
+		    
+		    String payloadTwo = "{\n" +
+		            "  \"datasource\": \"Sample Healthcare\",\n" +        
+		    		"}";			
+		    
+		    String payloadThree = "{\n" +
+		            "  \"datasource\": \"Sample Healthcare\",\n" +
+		    		"  \"metadata\":[\n  ]\n" +
+		    		"}";			
+		    
+		    String payloadFour = "{\n" +
+		            "  \"datasource\": \"Sample Healthcare\",\n" +
+		    		"  \"metadata\":[\n    {   \n\n    }\n  ]\n" +
+		    		"}";			
+
+		    
+		    String payloadFive = "{\n" +
+		            "  \"datasource\": \"Sample Healthcare\",\n" +
+		    		"  \"metadata\":[\n    {   \n         aa    \n    }\n  ]\n" +
+		    		"}";			
+
+		    String table = "Divisions";
+		    String id = "ID";		    
+		    
+		    String payloadSix = "{\n" +
+		            "  \"datasource\": \"Sample Healthcare\",\n" +
+		    		"  \"metadata\":[\n    {   \n         \"dim\":\"["+ table + "." + id +   "]\"    \n    }\n  ]\n" +
+		    		"}";					    
+		    
+		    //ShowText(payload);
+		    //ShowText(payloadTwo);
+		    //ShowText(payloadThree);
+		    //ShowText(payloadFour);
+		    //ShowText(payloadFive);
+		    ShowText(payloadSix);
+
+		    Response response = 
+		            given().urlEncodingEnabled(true)
+		           	.header("Authorization", "Bearer " + sisenseAccessToken)
+		            .contentType(ContentType.JSON)
+		            .body(payloadSix)
+		            //.post("http://nadevgvbi01a.corp.tangoe.com:8081/api/v1/authentication/login")
+		            .post(localMainEndpoint)
+		            .then()
+		            //.statusCode(200)
+		            .extract()
+		            .response();
+
+			System.out.println(response.getStatusCode());
+			JsonPath jsonPathEvaluator = response.jsonPath();
+			System.out.println(jsonPathEvaluator.get());
+			//ShowText(jsonPathEvaluator.get("access_token").toString());
+			//sisenseAccessToken = jsonPathEvaluator.get("access_token").toString();
+		}
+
 		
 		// bladd special for admin user.
 		// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -461,7 +528,7 @@ public class RestAssuredActions extends BaseSelenium
 		public static void logoutSisenseToken() {
 			Response response = DoGetRequestSisenseTokenLogout(mainEndpoint + "/authentication/logout"); 
 			Assert.assertTrue(response.getStatusCode() == 200);
-
+			ShowText("Token closed");
 			
 			
 			//Headers allHeaders = response.headers();
@@ -897,20 +964,26 @@ public class RestAssuredActions extends BaseSelenium
 			for(String str : listIn) {ShowText(str);}
 		}
 		
+		public static void ShowRelationShips() throws Exception {
+			ExcelSheetActions.readExcelSheetRelations();
+		}
+		
+		
+		
 		/*
 		 * this method can go in API requests 
 		 * 
 		 * 
 		 * 
 		 * 
-		 * 			BUG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  ------- missing item in spreadsheet is not found --- 
+		 * 
 		 * 							EP_TENANT table has TENANK_FK column but it is not in the spread sheet.
 		 * 		 
 		 */
 		
-		public static void LoadElasticCubeData() throws Exception { // zzz
+		public static void LoadAndVerifyElasticCubeData() throws Exception { // zzz
 
-			boolean foundSisenseColumnForExcelSheetColumn = false;
+			boolean foundSisenseColumnMatchesExcelSheetColumn = false;
 			List<SisenseColumn> listOfSisenseColumns;
 			
 			ExcelSheetActions.readExcelSheetTwo(); // read and store excel sheet <<<<<<<<-------- THIS WILL BE DONE IN THE TEST_db 
@@ -918,7 +991,7 @@ public class RestAssuredActions extends BaseSelenium
 			
 			// GET a token for bob.lichtenfels@tangoe.com -- call get qa admin user <<<<<<<<<<<<<<<<-----------------------------
 			
-			//Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Sample Healthcare");
+
 			Response response = DoGetRequestSisense(mainEndpoint + "/elasticubes/servers/next/LocalHost/Cloud_Analytics");
 			Assert.assertEquals(response.getStatusCode(), 200);
 
@@ -928,7 +1001,7 @@ public class RestAssuredActions extends BaseSelenium
 			Assert.assertTrue(listOfDataSetsNames.size() == listOfDataSetsOids.size());
 			
 			System.out.println("-----------------------------");
-			System.out.println("Oid and names size (number of data sets = " + listOfDataSetsNames.size() + ")" );
+			System.out.println("Number of data sets = " + listOfDataSetsNames.size() + ")" );
 			
 			for(int x = 0; x < listOfDataSetsNames.size(); x++) { // go through data sets
 				System.out.println("-----------------------------");
@@ -937,7 +1010,7 @@ public class RestAssuredActions extends BaseSelenium
 				
 				listOfDataSetObjects.add(new SisenseDataSet(listOfDataSetsNames.get(x), listOfDataSetsOids.get(x)));
 				
-				// go through tables in data set
+				// go through tables in each data set and store each table and its corresponding columns  
 				for(int z = 0; z < setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables.name").size(); z++) {
 					// store table name
 					tempTableName = setupStringListFromResponseAndJsonSelector(response, "datasets[" + x + "].schema.tables[" +  z + "].name").toString();
@@ -953,47 +1026,38 @@ public class RestAssuredActions extends BaseSelenium
 
 			// CLEAR TOKEN <<<<<<<<<<<<<< -----------------------------------------
 			
-			
-			ShowText("Sisense data ==============================================================================");
-			for(SisenseDataSet dSet : listOfDataSetObjects) {
-				dSet.Show();
-			}
-			ShowText("Excel data ==============================================================================");
-			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
-				dataBaseTable.Show();
-			}
+
+			//for(SisenseDataSet dSet : listOfDataSetObjects) {dSet.Show();}
+			//for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {dataBaseTable.Show();}
+
 			
 			ShowText("Begin Test ==============================================================================");
 			
-			// go through the tables in the excel sheet and look for each table and corresponding columns in the sisense cube
-			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) { 
+			// go through each tables in the excel sheet and look for a table and corresponding columns in the sisense cube
+			for(DatabaseTable excelDataBaseTable: ExcelSheetActions.listOfDataBaseTables) { 
 				for(SisenseDataSet dSet : listOfDataSetObjects) { // go through the list of data set objects from sisense and try to find the excel table
-					if(dSet.searchForSisenseTable(dataBaseTable.m_tableName)) { // see if database table name from spread sheet is found in the data set object from sisense
-						System.out.println("Found table " +  dataBaseTable.m_tableName + " and these actual columns " + dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName) + " in sisense");
-						dataBaseTable.setTableFound(); // set found flag in list of database tables from Excel 
+					if(dSet.searchForSisenseTable(excelDataBaseTable.m_tableName)) { // see if database table name from spread sheet is found in the data set object from sisense
+						System.out.println("Found table " +  excelDataBaseTable.m_tableName + " and these actual sisense columns " + dSet.searchForSisenseTableAndReturnColumnNames(excelDataBaseTable.m_tableName) + " in sisense");
+						excelDataBaseTable.setTableFound(); // set found flag in list of database tables from Excel 
 						
-						// look for the ....
-						List<String> actualSisnseTables = dSet.searchForSisenseTableAndReturnColumns(dataBaseTable.m_tableName);  
-						for(Fields excelField: dataBaseTable.listOfFieldNames) { // go through the expected columns in the excel sheet and look for each one in the sisense list of actual columns   
+						// get the sisense columns that go with the current excel sheet table from the corresponding sisense table  
+						List<SisenseColumn> actualSisenseColumnsList = dSet.getSisenseColumnsForSisenseTable(excelDataBaseTable.m_tableName);
+						
+						// go through the expected columns (fields) in the excel sheet and look for each one in the sisense list of actual columns
+						for(Fields excelField: excelDataBaseTable.listOfFieldNames) {    
+							foundSisenseColumnMatchesExcelSheetColumn = false;
 							
-							//if(!actualSisnseTables.contains(excelField.m_sisenseField)) { // see if list of actual sisense columns contains the expected field (column) in the database table in excel  
-							//	ShowText("ERRRRR spread sheet column " + excelField.m_sisenseField + " found in excel sheet but not found in sisense cube");
-							//}
-
-							foundSisenseColumnForExcelSheetColumn = false;
-							
-							// get the sisense columns that go with the   
-							List<SisenseColumn> sisenseColumnsList = dSet.getSisenseColumnsForSisenseTable(dataBaseTable.m_tableName);
-							for(SisenseColumn sisensecolumn : sisenseColumnsList) {
+							// go trough the sisense columns list that is from the sisense table and see is the column from the excel sheet is found.  
+							for(SisenseColumn sisensecolumn : actualSisenseColumnsList) { 
 								if(sisensecolumn.m_Name.equals(excelField.m_sisenseField)) {
-									foundSisenseColumnForExcelSheetColumn = true;
 									sisensecolumn.m_coulumnFound = true;
+									foundSisenseColumnMatchesExcelSheetColumn = true;
 									break;
 								}
 							}
 							
-							if(!foundSisenseColumnForExcelSheetColumn) {
-								Assert.fail("Failed to find excel sheet column name " + excelField.m_fieldName + " Table name = "  + dataBaseTable.m_tableName);
+							if(!foundSisenseColumnMatchesExcelSheetColumn) { // verify current excel sheet column found
+								Assert.fail("Failed to find excel sheet column name " + excelField.m_sisenseField + " that is in excel sheet table name "  + excelDataBaseTable.m_tableName);
 							}
 						}
 					}
@@ -1002,24 +1066,33 @@ public class RestAssuredActions extends BaseSelenium
 
 			System.out.println("\n\nLook for tables in excel spread sheet that are not found.");
 			for(DatabaseTable dataBaseTable: ExcelSheetActions.listOfDataBaseTables) {
-				if(dataBaseTable.m_tableFound == false) {
-					System.out.println("table not found = " + dataBaseTable.m_tableName);
+				if(dataBaseTable.m_tableFound == false && !dataBaseTable.m_tableName.equals("DL_DYNAMIC_LIST_VALUE")) {
+					Assert.fail("excel sheet table not found in sisense cube = " + dataBaseTable.m_tableName);
 				}
 			}
 			
+			System.out.println("\n\nLook for tables in siense cube that are not in spread sheet.");
 			for(SisenseDataSet dSet : listOfDataSetObjects){
-				//System.out.println(dSet.);
-				
-				//listOfSisenseColumns = dSet.getSisenseColumnsForDataSet();
-				
-				
-				
-				
-				//for(SisenseColumn sisenseColumn : listOfSisenseColumns) {
-				//	if(!sisenseColumn.m_coulumnFound) {
-				//		System.out.println("Extra sisense column " + sisenseColumn.m_Name);
-				//	}
-				//}
+				for(SisenseTable table: dSet.getSisenseTablesForDataSet()){
+					if(!table.m_tableFound) {
+						System.out.println("Warning: Sisense table " + table.m_name + " not found in excel spread sheet");
+					}
+				}
+			}
+			
+			
+			System.out.println("\n\nLook for columns in siense cube that are not in spread sheet.");
+			for(SisenseDataSet dSet : listOfDataSetObjects){
+				for(SisenseTable table : dSet.getSisenseTablesForDataSet()) {
+					//System.out.println("Table Name = " + table.m_name);
+					if(!table.m_name.equals("V_CLOUD_DATA")) {
+						for(SisenseColumn column: table.getSisenseColumns()){
+							if(!column.m_coulumnFound){
+								System.out.println("Warning: This sisense column not found in excel spread sheet: " + column.m_Name + " under table name " + table.m_name);
+							}
+						}
+					}
+				}
 			}
 		}
 }

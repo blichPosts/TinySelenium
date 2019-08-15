@@ -170,7 +170,72 @@ public class ExcelSheetActions {
         
 	}
 	
-	
+	public static void readExcelSheetRelations() throws Exception {
+		String excelFile = "C:/LichPublic/BoneYard/CloudElasticubeDataModel.xlsx";
+		int loopCounter = 0;
+		int numberOfStoredDatabases = -1;
+		boolean leaveLoopRelationShips = false;
+		
+		Workbook workbook = WorkbookFactory.create(new File(excelFile));
+		System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
+		
+        System.out.println("Retrieving Sheets using for-each loop");
+        for(Sheet sheet: workbook) {
+            System.out.println("=> " + sheet.getSheetName());
+        }
+        
+        // Getting the Sheet at index zero
+        Sheet sheet = workbook.getSheetAt(1);
+        
+        // Create a DataFormatter to format and get each cell's value as String
+        DataFormatter dataFormatter = new DataFormatter();
+        
+        for (Row row: sheet) {
+        	if(loopCounter < 2){ // don't user top three rows of sheet
+        		loopCounter++;
+        		continue;
+        	}
+        	
+        	if(leaveLoopRelationShips) {
+        		break;
+        	}
+        	
+        	// loop through the rows of selected sheet
+        	for(Cell cell: row) {
+
+        		if(cell.getColumnIndex() == 0){
+        			if(cell.equals(null)) {
+        				break;
+        			}
+        			System.out.println("Table -------------- " + cell.toString());
+        		}
+        		
+        		if(cell.getColumnIndex() == 1){
+        			System.out.println("Field " + cell.toString());
+        		}
+
+        		if(cell.getColumnIndex() == 2){
+        			System.out.println("Foreign Table " + cell.toString());
+        		}
+        		
+        		if(cell.getColumnIndex() == 3){
+        			System.out.println("Foreign Field " + cell.toString());
+        		}
+        	}
+        }
+    	workbook.close();
+
+    	// store away the expected field names for the sisense cube
+        //for(DatabaseTable dataBaseTable: listOfDataBaseTables) {
+        //	dataBaseTable.setupSisenseFields();
+        //}
+
+        //for(DatabaseTable dataBaseTable: listOfDataBaseTables) {
+        //	dataBaseTable.Show();
+        //}
+        
+        
+	}	
 	
 	
 }

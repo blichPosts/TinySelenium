@@ -24,10 +24,10 @@ public class RestTestWithTxcelSheet {
 	
 		//RestAssuredActions.SanityCheck();
 		//RestAssuredActions.CollectionWork();
-		//RestAssuredActions.PostToken();
+		//RestAssuredActions.PostToken(); // -------------------- DEMO
 		//RestAssuredActions.Mobproc();
 		//RestAssuredActions.MobprocTwo(); // this has list for headers.
-		//RestAssuredActions.MobprocAssetsDevices();
+		//RestAssuredActions.MobprocAssetsDevices(); // -------------------- DEMO
 		//RestAssuredActions.PostToken();
 		//RestAssuredActions.postTokenSisense(); // admin user
 		//RestAssuredActions.getSisenseUsers();
@@ -38,7 +38,7 @@ public class RestTestWithTxcelSheet {
 		
 		
 
-		//RestAssuredActions.postTokenSisenseForSpecifiedUser("bob.lichtenfels@tangoe.com");
+		RestAssuredActions.postTokenSisenseForSpecifiedUser("bob.lichtenfels@tangoe.com");
 		//RestAssuredActions.getSpecificUserSisenseDashboardDataAdmin();
 		//RestAssuredActions.getSpecificUserSisenseDashboardDataAdmin();
 		// RestAssuredActions.WorkOnElasticCubes();
@@ -48,10 +48,13 @@ public class RestTestWithTxcelSheet {
 		// Excel below
 		//ExcelSheetActions.readExcelSheet();
 		//ExcelSheetActions.readExcelSheetTwo();
-		RestAssuredActions.LoadElasticCubeData();
+		// RestAssuredActions.LoadAndVerifyElasticCubeData(); // demo prototype
+		//RestAssuredActions.ShowRelationShips();
+		
 		//DataBaseTestClass.runTest1();
 		
-		
+		RestAssuredActions.postSisenseJaql("bob.lichtenfels@tangoe.com");
+		RestAssuredActions.logoutSisenseToken();
 	}
 	
 	

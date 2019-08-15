@@ -5,12 +5,14 @@ import java.util.List;
 
 public class SisenseTable {
 	
-	String m_name = ""; 
+	public String m_name = ""; 
+	public boolean m_tableFound;
 	List<SisenseColumn> m_columns;
 	
 	public SisenseTable(String tableName, List<String> columns) {
 		m_name = tableName;
 		m_columns = new ArrayList<SisenseColumn>();
+		m_tableFound = false;
 
 		for(String string : columns) { 
 			m_columns.add(new SisenseColumn(string));
@@ -33,9 +35,7 @@ public class SisenseTable {
 	public void Show() {
 		System.out.println("Sisense Cube Table Name: " + m_name);
 		System.out.print("Sisense Cube Columns: ");
-		for(SisenseColumn sisenseColumn : m_columns) {
-			System.out.print(m_name + ", ");
-		}
+		System.out.print(getSisenseColumnNames());
 		System.out.println("");
 	}
 }
